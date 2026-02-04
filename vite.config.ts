@@ -8,6 +8,8 @@ import { qwikCity } from "@builder.io/qwik-city/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import pkg from "./package.json";
 import tailwindcss from "@tailwindcss/vite";
+import mkcert from 'vite-plugin-mkcert'
+
 type PkgDep = Record<string, string>;
 const { dependencies = {}, devDependencies = {} } = pkg as any as {
   dependencies: PkgDep;
@@ -22,6 +24,7 @@ errorOnDuplicatesPkgDeps(devDependencies, dependencies);
 export default defineConfig(({ command, mode }): UserConfig => {
   return {
     plugins: [
+      mkcert(),
       qwikCity(),
       qwikVite(),
       tsconfigPaths({ root: "." }),
@@ -35,7 +38,7 @@ export default defineConfig(({ command, mode }): UserConfig => {
     },
     /**
      * This is an advanced setting. It improves the bundling of your server code. To use it, make sure you understand when your consumed packages are dependencies or dev dependencies. (otherwise things will break in production)
-     */
+    */
     // ssr:
     //   command === "build" && mode === "production"
     //     ? {
@@ -54,6 +57,7 @@ export default defineConfig(({ command, mode }): UserConfig => {
         // Don't cache the server response in dev mode
         "Cache-Control": "public, max-age=0",
       },
+      https: true
     },
     preview: {
       headers: {
