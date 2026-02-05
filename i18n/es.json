@@ -1,0 +1,26 @@
+{
+  "locale": "es",
+  "name": "es",
+  "translations": {
+    "nav.home": "Inicio",
+    "nav.about": "Nosotros",
+    "nav.services": "Servicios",
+    "nav.events": "Eventos",
+    "nav.join": "Asociate",
+    "nav.contact": "Contacto",
+    "nav.changeLanguage": "Cambiar idioma",
+    "footer.description": "Desde 1889, preservando la cultura italiana y construyendo comunidad en Miramar. Un legado de tradición, solidaridad y futuro.",
+    "footer.quickLinks": "Enlaces Rápidos",
+    "footer.service.italian": "Cursos de Idioma Italiano",
+    "footer.service.citizenship": "Asesoría Ciudadanía",
+    "footer.service.rentals": "Alquiler de Salones",
+    "footer.service.cultural": "Actividades Culturales",
+    "footer.copyright": "Todos los derechos reservados.",
+    "home.title": "Bienvenido al Círculo Italiano Joven Italia",
+    "home.subtitle": "Uniendo generaciones, celebrando nuestra herencia italiana en Miramar desde 1889.",
+    "home.metaTitle": "Círculo Italiano Joven Italia - Miramar",
+    "home.metaDescription": "Sitio oficial del Círculo Italiano Joven Italia de Miramar. Eventos, cultura, idioma italiano y comunidad.",
+    "home.founded": "Fundado el 28 de Abril de 1889",
+    "home.viewNextEvents": "Ver próximos eventos"
+  }
+}

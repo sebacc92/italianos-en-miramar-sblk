@@ -1,12 +1,8 @@
 import { component$, isDev } from "@builder.io/qwik";
 import { QwikCityProvider, RouterOutlet } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
-import { storyblokInit, apiPlugin } from "@storyblok/js";
-import { storyblokConfig } from "./utils/storyblok";
 
 import "./global.css";
-
-storyblokInit(storyblokConfig);
 
 export default component$(() => {
     /**

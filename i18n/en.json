@@ -1,0 +1,26 @@
+{
+  "locale": "en",
+  "name": "en",
+  "translations": {
+    "nav.home": "Home",
+    "nav.about": "About Us",
+    "nav.services": "Services",
+    "nav.events": "Events",
+    "nav.join": "Join Us",
+    "nav.contact": "Contact",
+    "nav.changeLanguage": "Change Language",
+    "footer.description": "Since 1889, preserving Italian culture and building community in Miramar. A legacy of tradition, solidarity, and future.",
+    "footer.quickLinks": "Quick Links",
+    "footer.service.italian": "Italian Language Courses",
+    "footer.service.citizenship": "Citizenship Consultancy",
+    "footer.service.rentals": "Hall Rentals",
+    "footer.service.cultural": "Cultural Activities",
+    "footer.copyright": "All rights reserved.",
+    "home.title": "Welcome to the Italian Circle Joven Italia",
+    "home.subtitle": "Uniting generations, celebrating our Italian heritage in Miramar since 1889.",
+    "home.metaTitle": "Italian Circle Joven Italia - Miramar",
+    "home.metaDescription": "Official website of the Italian Circle Joven Italia of Miramar. Events, culture, Italian language, and community.",
+    "home.founded": "Founded on April 28, 1889",
+    "home.viewNextEvents": "View upcoming events"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "locale": "it",
+  "name": "it",
+  "translations": {
+    "nav.home": "Home",
+    "nav.about": "Chi Siamo",
+    "nav.services": "Servizi",
+    "nav.events": "Eventi",
+    "nav.join": "Associati",
+    "nav.contact": "Contatti",
+    "nav.changeLanguage": "Cambia lingua",
+    "footer.description": "Dal 1889, preservando la cultura italiana e costruendo comunità a Miramar. Un'eredità di tradizione, solidarietà e futuro.",
+    "footer.quickLinks": "Link Rapidi",
+    "footer.service.italian": "Corsi di Lingua Italiana",
+    "footer.service.citizenship": "Consulenza Cittadinanza",
+    "footer.service.rentals": "Affitto Sale",
+    "footer.service.cultural": "Attività Culturali",
+    "footer.copyright": "Tutti i diritti riservati.",
+    "home.title": "Benvenuti al Circolo Italiano Joven Italia",
+    "home.subtitle": "Unendo generazioni, celebrando la nostra eredità italiana a Miramar dal 1889.",
+    "home.metaTitle": "Circolo Italiano Joven Italia - Miramar",
+    "home.metaDescription": "Sito ufficiale del Circolo Italiano Joven Italia di Miramar. Eventi, cultura, lingua italiana e comunità.",
+    "home.founded": "Fondato il 28 Aprile 1889",
+    "home.viewNextEvents": "Vedi prossimi eventi"
+  }
+}

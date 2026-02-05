@@ -8,6 +8,7 @@ import { qwikCity } from "@builder.io/qwik-city/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import pkg from "./package.json";
 import tailwindcss from "@tailwindcss/vite";
+import { i18nPlugin } from "compiled-i18n/vite";
 import mkcert from 'vite-plugin-mkcert'
 
 type PkgDep = Record<string, string>;
@@ -24,11 +25,12 @@ errorOnDuplicatesPkgDeps(devDependencies, dependencies);
 export default defineConfig(({ command, mode }): UserConfig => {
   return {
     plugins: [
-      mkcert(),
+      command === "serve" ? mkcert() : undefined,
       qwikCity(),
       qwikVite(),
       tsconfigPaths({ root: "." }),
       tailwindcss(),
+      i18nPlugin({ locales: ["en", "es", "it"] }),
     ],
     // This tells Vite which dependencies to pre-build in dev mode.
     optimizeDeps: {
@@ -57,7 +59,7 @@ export default defineConfig(({ command, mode }): UserConfig => {
         // Don't cache the server response in dev mode
         "Cache-Control": "public, max-age=0",
       },
-      https: true
+
     },
     preview: {
       headers: {
