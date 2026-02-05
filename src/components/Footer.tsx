@@ -104,7 +104,7 @@ export default component$(() => {
                                 </Link>
                             </li>
                             <li>
-                                <Link href={`/${currentLocale}/alquiler-salones`} class="text-gray-400 hover:text-white transition-colors">
+                                <Link href={`/${currentLocale}/salones`} class="text-gray-400 hover:text-white transition-colors">
                                     {_`footer.service.rentals`}
                                 </Link>
                             </li>
