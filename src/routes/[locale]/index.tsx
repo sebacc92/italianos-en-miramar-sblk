@@ -3,6 +3,7 @@ import { DocumentHead } from "@builder.io/qwik-city";
 import HeroSlider from "~/components/HeroSlider/HeroSlider";
 import { _ } from "compiled-i18n";
 import { Services } from "~/components/services/services";
+import { History } from "~/components/history/history";
 
 export default component$(() => {
     const title = _`home.title`;
@@ -14,6 +15,7 @@ export default component$(() => {
                 title={title}
             />
             <Services />
+            <History />
         </>
     );
 });
