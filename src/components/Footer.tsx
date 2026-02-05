@@ -99,7 +99,7 @@ export default component$(() => {
                                 </Link>
                             </li>
                             <li>
-                                <Link href={`/${currentLocale}/tramites`} class="text-gray-400 hover:text-white transition-colors">
+                                <Link href={`/${currentLocale}/ciudadania`} class="text-gray-400 hover:text-white transition-colors">
                                     {_`footer.service.citizenship`}
                                 </Link>
                             </li>
