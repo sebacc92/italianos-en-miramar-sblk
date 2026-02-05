@@ -1,5 +1,5 @@
 import { component$ } from '@builder.io/qwik';
-import { Form, globalAction$ } from '@builder.io/qwik-city';
+import { Form, type ActionStore } from '@builder.io/qwik-city';
 import { Button } from '~/components/ui/Button';
 import { Input } from '~/components/ui/Input';
 import { Label } from '~/components/ui/Label';
@@ -8,23 +8,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/com
 import { LuSend, LuCheckCircle } from '@qwikest/icons/lucide';
 import { COURSES } from './CourseList';
 
-export const useSubmitInscription = globalAction$(async (data) => {
-    // Aquí iría la lógica real de guardado o envío de email
-    // Por ahora solo logueamos y retornamos éxito
-    console.log('Inscripción Recibida:', data);
+interface InscriptionFormProps {
+    action: ActionStore<any, any>;
+}
 
-    // Simular un pequeño delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    return {
-        success: true,
-        message: '¡Gracias por inscribirte! Nos pondremos en contacto pronto.'
-    };
-});
-
-export const InscriptionForm = component$(() => {
-    const action = useSubmitInscription();
-
+export const InscriptionForm = component$<InscriptionFormProps>(({ action }) => {
     // Opciones para el select basadas en los cursos disponibles
     const courseOptions = COURSES.map(c => ({
         label: `${c.title} (${c.schedule})`,
@@ -58,20 +46,35 @@ export const InscriptionForm = component$(() => {
                     </div>
                 ) : (
                     <Form action={action} class="space-y-6">
+                        {action.value?.message && !action.value.success && (
+                            <div class="p-4 bg-red-50 text-red-700 rounded-md border border-red-200 text-sm">
+                                {action.value.message}
+                            </div>
+                        )}
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <Label for="name">Nombre y Apellido</Label>
-                                <Input name="name" id="name" placeholder="Ej: Juan Pérez" required />
+                                <Input name="name" id="name" placeholder="Ej: Juan Pérez" />
+                                {action.value?.fieldErrors?.name && (
+                                    <p class="text-xs text-red-600 mt-1">{action.value.fieldErrors.name}</p>
+                                )}
                             </div>
                             <div class="space-y-2">
                                 <Label for="phone">Teléfono (WhatsApp)</Label>
-                                <Input name="phone" id="phone" type="tel" placeholder="Ej: 2291 123456" required />
+                                <Input name="phone" id="phone" type="tel" placeholder="Ej: 2291 123456" />
+                                {action.value?.fieldErrors?.phone && (
+                                    <p class="text-xs text-red-600 mt-1">{action.value.fieldErrors.phone}</p>
+                                )}
                             </div>
                         </div>
 
                         <div class="space-y-2">
                             <Label for="email">Email de contacto</Label>
-                            <Input name="email" id="email" type="email" placeholder="juan@ejemplo.com" required />
+                            <Input name="email" id="email" type="email" placeholder="juan@ejemplo.com" />
+                            {action.value?.fieldErrors?.email && (
+                                <p class="text-xs text-red-600 mt-1">{action.value.fieldErrors.email}</p>
+                            )}
                         </div>
 
                         <div class="space-y-2">
@@ -80,8 +83,10 @@ export const InscriptionForm = component$(() => {
                                 name="course"
                                 id="course"
                                 options={courseOptions}
-                                required
                             />
+                            {action.value?.fieldErrors?.course && (
+                                <p class="text-xs text-red-600 mt-1">{action.value.fieldErrors.course}</p>
+                            )}
                         </div>
 
                         <div class="pt-4">

@@ -1,13 +1,45 @@
 import { component$ } from '@builder.io/qwik';
-import { type DocumentHead } from '@builder.io/qwik-city';
+import { type DocumentHead, routeAction$, zod$, z } from '@builder.io/qwik-city';
 import { CourseList } from '~/components/idiomas/CourseList';
-import { InscriptionForm, useSubmitInscription } from '~/components/idiomas/InscriptionForm';
+import { InscriptionForm } from '~/components/idiomas/InscriptionForm';
 import { Button } from '~/components/ui/Button';
-import { _ } from "compiled-i18n";
+import { tursoClient } from '~/utils/turso'; // Importamos tu utilidad
 
-export { useSubmitInscription };
+export const useSubmitInscription = routeAction$(async (data, requestEvent) => {
+    try {
+        // Usamos la utilidad centralizada, igual que en tu otro proyecto
+        const db = tursoClient(requestEvent);
+
+        await db.execute({
+            sql: "INSERT INTO preinscripciones (nombre, email, telefono, curso, estado) VALUES (?, ?, ?, ?, 'pendiente')",
+            args: [data.name, data.email, data.phone, data.course]
+        });
+
+        return {
+            success: true,
+            message: '¡Gracias por inscribirte! Nos pondremos en contacto pronto.'
+        };
+    } catch (e: any) {
+        console.error('Error saving inscription:', e);
+
+        // Manejo de errores específico (opcional, pero útil si quisieras validar duplicados como en el otro proyecto)
+        /* if (e.code === 'SQLITE_CONSTRAINT') { ... } 
+        */
+
+        return {
+            success: false,
+            message: 'Ocurrió un error al procesar tu solicitud. Por favor intenta nuevamente.'
+        };
+    }
+}, zod$({
+    name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
+    email: z.string().email('Email inválido'),
+    phone: z.string().min(8, 'Teléfono inválido (mínimo 8 números)'),
+    course: z.string().min(1, 'Selecciona un curso'),
+}));
 
 export default component$(() => {
+    const action = useSubmitInscription();
     return (
         <div class="flex flex-col min-h-screen bg-gray-50">
             {/* Hero Section */}
@@ -62,7 +94,7 @@ export default component$(() => {
                 <div class="absolute top-0 inset-x-0 h-40 bg-gray-50"></div>
 
                 <div class="container mx-auto px-4 relative z-10">
-                    <InscriptionForm />
+                    <InscriptionForm action={action} />
                 </div>
             </section>
         </div>
