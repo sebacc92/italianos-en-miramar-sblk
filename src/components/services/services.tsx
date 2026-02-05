@@ -92,7 +92,7 @@ export const Services = component$(() => {
                     </Link>
 
                     {/* Card 5: Escuela de Danzas */}
-                    <Link href={`/${currentLocale}/clases/danzas`} class="group">
+                    <Link href={`/${currentLocale}/danzas`} class="group">
                         <div class="h-full bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-pink-200 hover:-translate-y-2 relative overflow-hidden">
                             <div class="absolute top-0 right-0 w-32 h-32 bg-pink-50 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
                             <div class="relative z-10">

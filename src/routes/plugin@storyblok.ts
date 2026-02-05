@@ -7,10 +7,16 @@ import {
     loadStoryblokBridge,
 } from "@storyblok/js";
 
+const accessToken = import.meta.env.PUBLIC_STORYBLOK_TOKEN;
+
+if (!accessToken) {
+    console.warn("⚠️ Storyblok access token is not configured. Set PUBLIC_STORYBLOK_TOKEN in your .env file.");
+}
+
 export const { storyblokApi } = storyblokInit({
-    accessToken: import.meta.env.PUBLIC_STORYBLOK_TOKEN,
+    accessToken: accessToken as string,
     use: [apiPlugin],
-    bridge: true,
+    bridge: import.meta.env.DEV,
 });
 
 export const useStoryblok = (

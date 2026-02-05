@@ -6,7 +6,6 @@ import { Label } from '~/components/ui/Label';
 import { Select } from '~/components/ui/Select';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/Card';
 import { LuCalendarCheck, LuMapPin, LuUsers, LuCheckCircle, LuSend } from '@qwikest/icons/lucide';
-import { _ } from "compiled-i18n";
 import { tursoClient } from '~/utils/turso';
 
 export const useRentHall = routeAction$(async (data, requestEvent) => {
