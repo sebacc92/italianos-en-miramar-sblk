@@ -19,9 +19,9 @@ export default component$(() => {
 
   const navigation: NavigationItem[] = [
     { name: _`nav.home`, href: `/${currentLocale}` },
-    { name: _`nav.about`, href: `/${currentLocale}/nosotros` },
     { name: _`nav.services`, href: `/${currentLocale}/#servicios` },
     { name: _`nav.events`, href: `/${currentLocale}/eventos` },
+    { name: _`nav.about`, href: `/${currentLocale}/nosotros` },
     { name: _`nav.join`, href: `/${currentLocale}/asociarse` },
     { name: _`nav.contact`, href: `/${currentLocale}/contacto` },
   ];
