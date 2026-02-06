@@ -22,7 +22,7 @@ export default component$(() => {
     { name: _`nav.about`, href: `/${currentLocale}/nosotros` },
     { name: _`nav.services`, href: `/${currentLocale}/#servicios` },
     { name: _`nav.events`, href: `/${currentLocale}/eventos` },
-    { name: _`nav.join`, href: `/${currentLocale}/asociate` },
+    { name: _`nav.join`, href: `/${currentLocale}/asociarse` },
     { name: _`nav.contact`, href: `/${currentLocale}/contacto` },
   ];
 

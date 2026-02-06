@@ -4,6 +4,7 @@ import { guessLocale, locales } from 'compiled-i18n'
 import Header from "~/components/Header";
 import Footer from "~/components/Footer";
 import { WhatsAppButton } from "~/components/WhatsAppButton";
+import { ScrollToTop } from "~/components/scroll-to-top";
 
 export const onStaticGenerate = async () => {
     return locales.map((locale) => ({
@@ -56,6 +57,7 @@ export default component$(() => {
             </main>
             <Footer />
             <WhatsAppButton />
+            <ScrollToTop />
         </div>
     );
 });

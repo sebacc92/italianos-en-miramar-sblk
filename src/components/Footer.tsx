@@ -78,7 +78,7 @@ export default component$(() => {
                                 </Link>
                             </li>
                             <li>
-                                <Link href={`/${currentLocale}/asociate`} class="text-gray-400 hover:text-white hover:pl-2 transition-all duration-200 flex items-center gap-2">
+                                <Link href={`/${currentLocale}/asociarse`} class="text-gray-400 hover:text-white hover:pl-2 transition-all duration-200 flex items-center gap-2">
                                     <span class="w-1 h-1 bg-white rounded-full"></span>
                                     {_`nav.join`}
                                 </Link>

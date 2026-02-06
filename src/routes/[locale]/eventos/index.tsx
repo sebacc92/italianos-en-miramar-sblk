@@ -83,7 +83,7 @@ export default component$(() => {
                 month: 'long',
                 day: 'numeric'
             }).format(date);
-        } catch (e) {
+        } catch {
             return dateString; // Fallback
         }
     };
@@ -131,7 +131,7 @@ export default component$(() => {
                                                 <div class="h-48 bg-gray-200 overflow-hidden">
                                                     <img
                                                         src={`${evento.content.imagen.filename}/m/600x400/smart`}
-                                                        alt={evento.content.imagen.alt || evento.content.title}
+                                                        alt={evento.content.imagen.alt || evento.content.titulo}
                                                         class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                                                         width="600"
                                                         height="400"
