@@ -53,8 +53,8 @@ export default component$(() => {
     const action = useRentHall();
 
     const hallOptions = [
-        { label: 'Salón Principal "Giuseppe Verdi" (150 personas)', value: 'giuseppe_verdi' },
-        { label: 'Salón "Dante Alighieri" (50 personas)', value: 'dante_alighieri' },
+        { label: 'Salón Principal "Giuseppe Verdi" (280 personas)', value: 'giuseppe_verdi' },
+        { label: 'Salón "Dante Alighieri" (80 personas)', value: 'dante_alighieri' },
     ];
 
     const eventTypeOptions = [

@@ -48,7 +48,7 @@ export const Services = component$(() => {
                                 <div class="w-14 h-14 bg-gray-100 text-gray-600 rounded-xl flex items-center justify-center mb-6 group-hover:bg-gray-600 group-hover:text-white transition-colors">
                                     <LuBuilding2 class="w-7 h-7" />
                                 </div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-gray-700 transition-colors">{_`services.halls.title`}</h3>
+                                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-gray-700 transition-colors">{_`footer.service.rentals`}</h3>
                                 <p class="text-gray-600 mb-6 leading-relaxed">{_`services.halls.desc`}</p>
                                 <span class="inline-flex items-center text-gray-600 font-semibold group-hover:translate-x-1 transition-transform">
                                     {_`services.halls.cta`} <LuArrowRight class="ml-2 w-4 h-4" />
@@ -57,24 +57,7 @@ export const Services = component$(() => {
                         </div>
                     </Link>
 
-                    {/* Card 3: Ciudadanía */}
-                    <Link href={`/${currentLocale}/ciudadania`} class="group">
-                        <div class="h-full bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-red-200 hover:-translate-y-2 relative overflow-hidden">
-                            <div class="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-                            <div class="relative z-10">
-                                <div class="w-14 h-14 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mb-6 group-hover:bg-red-600 group-hover:text-white transition-colors">
-                                    <LuFileText class="w-7 h-7" />
-                                </div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-red-700 transition-colors">{_`services.citizenship.title`}</h3>
-                                <p class="text-gray-600 mb-6 leading-relaxed">{_`services.citizenship.desc`}</p>
-                                <span class="inline-flex items-center text-red-600 font-semibold group-hover:translate-x-1 transition-transform">
-                                    {_`services.citizenship.cta`} <LuArrowRight class="ml-2 w-4 h-4" />
-                                </span>
-                            </div>
-                        </div>
-                    </Link>
-
-                    {/* Card 4: Eventos */}
+                    {/* Card 3: Eventos */}
                     <Link href={`/${currentLocale}/eventos`} class="group">
                         <div class="h-full bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-green-200 hover:-translate-y-2 relative overflow-hidden">
                             <div class="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
@@ -86,6 +69,23 @@ export const Services = component$(() => {
                                 <p class="text-gray-600 mb-6 leading-relaxed">{_`services.culture.desc`}</p>
                                 <span class="inline-flex items-center text-green-700 font-semibold group-hover:translate-x-1 transition-transform">
                                     {_`services.culture.cta`} <LuArrowRight class="ml-2 w-4 h-4" />
+                                </span>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Card 4: Ciudadanía */}
+                    <Link href={`/${currentLocale}/ciudadania`} class="group">
+                        <div class="h-full bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-red-200 hover:-translate-y-2 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                            <div class="relative z-10">
+                                <div class="w-14 h-14 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mb-6 group-hover:bg-red-600 group-hover:text-white transition-colors">
+                                    <LuFileText class="w-7 h-7" />
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-red-700 transition-colors">{_`services.citizenship.title`}</h3>
+                                <p class="text-gray-600 mb-6 leading-relaxed">{_`services.citizenship.desc`}</p>
+                                <span class="inline-flex items-center text-red-600 font-semibold group-hover:translate-x-1 transition-transform">
+                                    {_`services.citizenship.cta`} <LuArrowRight class="ml-2 w-4 h-4" />
                                 </span>
                             </div>
                         </div>
