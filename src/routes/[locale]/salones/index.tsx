@@ -53,8 +53,8 @@ export default component$(() => {
     const action = useRentHall();
 
     const hallOptions = [
-        { label: 'Salón Principal "Giuseppe Verdi" (280 personas)', value: 'giuseppe_verdi' },
-        { label: 'Salón "Dante Alighieri" (80 personas)', value: 'dante_alighieri' },
+        { label: 'Salón Principal "Michelangelo" (280 personas)', value: 'michelangelo' },
+        { label: 'Salón "Giuseppe Verdi" (90 personas)', value: 'giuseppe_verdi' },
     ];
 
     const eventTypeOptions = [
@@ -103,49 +103,52 @@ export default component$(() => {
                     {/* Salón 1 */}
                     <Card class="overflow-hidden shadow-lg border-blue-100 hover:shadow-xl transition-shadow bg-white">
                         <div class="h-48 bg-gray-200 relative overflow-hidden group">
-                            {/* Placeholder generic image since we don't have specifics yet. Using div with gradient. */}
-                            <div class="w-full h-full bg-gradient-to-tr from-gray-300 to-gray-100 flex items-center justify-center text-gray-400">
-                                <span class="text-4xl">🏛️</span>
-                            </div>
+                            <img
+                                src="/images/salones/michelangelo.jpg"
+                                alt="Salón Michelangelo"
+                                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            />
                         </div>
                         <CardHeader>
-                            <CardTitle class="text-2xl mb-2 text-blue-900">Salón Principal "Giuseppe Verdi"</CardTitle>
+                            <CardTitle class="text-2xl mb-2 text-blue-900">Salón Principal "Michelangelo"</CardTitle>
                             <CardDescription class="text-base">El escenario perfecto para grandes celebraciones.</CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <div class="flex items-center text-gray-600">
                                 <LuUsers class="w-5 h-5 mr-3 text-blue-600" />
-                                <span>Capacidad hasta 280 personas (Banquete)</span>
+                                <span class="font-medium">Capacidad hasta 280 personas</span>
                             </div>
                             <div class="flex items-center text-gray-600">
                                 <LuMapPin class="w-5 h-5 mr-3 text-blue-600" />
-                                <span>Planta Baja - Accesible</span>
+                                <span>1er Piso - Accesible</span>
                             </div>
                             <p class="text-gray-600 leading-relaxed mt-4">
-                                Un salón histórico con techos altos, escenario teatral y excelente acústica. Ideal para casamientos, fiestas de 15, cenas show y actos protocolares.
+                                Un salón histórico con amplios ventanales, luz natural y vistas a la ciudad. Ideal para casamientos, fiestas de 15, cenas show y conferencias.
                             </p>
                         </CardContent>
                     </Card>
 
                     {/* Salón 2 */}
                     <Card class="overflow-hidden shadow-lg border-blue-100 hover:shadow-xl transition-shadow bg-white">
-                        <div class="h-48 bg-gray-200 relative overflow-hidden">
-                            <div class="w-full h-full bg-gradient-to-tr from-gray-300 to-gray-100 flex items-center justify-center text-gray-400">
-                                <span class="text-4xl">🎓</span>
-                            </div>
+                        <div class="h-48 bg-gray-200 relative overflow-hidden group">
+                            <img
+                                src="/images/salones/giuseppe.jpg"
+                                alt="Salón Giuseppe Verdi"
+                                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            />
                         </div>
                         <CardHeader>
-                            <CardTitle class="text-2xl mb-2 text-blue-900">Salón "Dante Alighieri"</CardTitle>
-                            <CardDescription class="text-base">Intimidad y funcionalidad para eventos medianos.</CardDescription>
+                            <CardTitle class="text-2xl mb-2 text-blue-900">Salón "Giuseppe Verdi"</CardTitle>
+                            <CardDescription class="text-base">Intimidad y elegancia para eventos medianos.</CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <div class="flex items-center text-gray-600">
                                 <LuUsers class="w-5 h-5 mr-3 text-blue-600" />
-                                <span>Capacidad hasta 90 personas</span>
+                                <span class="font-medium">Capacidad hasta 90 personas</span>
                             </div>
                             <div class="flex items-center text-gray-600">
                                 <LuMapPin class="w-5 h-5 mr-3 text-blue-600" />
-                                <span>Primer Piso</span>
+                                <span>2do Piso</span>
                             </div>
                             <p class="text-gray-600 leading-relaxed mt-4">
                                 Espacio luminoso y versátil. Perfecto para conferencias, cursos, reuniones corporativas, cumpleaños infantiles o reuniones familiares privadas.
@@ -279,7 +282,7 @@ export const head: DocumentHead = {
     meta: [
         {
             name: 'description',
-            content: 'Alquiler de salones para eventos en Miramar. Salón Giuseppe Verdi y Dante Alighieri. Ideales para casamientos, conferencias y fiestas.',
+            content: 'Alquiler de salones para eventos en Miramar. Salón Michelangelo y Giuseppe Verdi. Ideales para casamientos, conferencias y fiestas.',
         },
     ],
 };
