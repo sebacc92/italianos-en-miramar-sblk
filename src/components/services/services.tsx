@@ -173,7 +173,7 @@ export const Services = component$(() => {
                 </div>
                 <h3 class="mb-3 text-xl font-bold text-white transition-colors">{_`services.university.title`}</h3>
                 <p class="mb-6 leading-relaxed text-gray-100">{_`services.university.desc`}</p>
-                <span class="inline-flex items-center font-bold text-[#F39200] transition-transform group-hover:translate-x-1 group-hover:text-[#FFD700]">
+                <span class="inline-flex items-center font-bold text-white transition-transform group-hover:translate-x-1 group-hover:text-[#FFD700]">
                   {_`services.university.cta`}{" "}
                   <LuArrowRight class="ml-2 h-4 w-4" />
                 </span>
