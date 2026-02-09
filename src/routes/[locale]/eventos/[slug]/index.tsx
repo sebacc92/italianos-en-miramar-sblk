@@ -101,10 +101,10 @@
 //                     </header>
 
 //                     <div class="prose prose-lg max-w-none text-gray-700">
-//                         {/* RichText rendering would require a parser. 
+//                         {/* RichText rendering would require a parser.
 //                  Since renderRichText from SDK is not available/reliable in this context without SDK,
 //                  we'll strip it or check if @storyblok/js exports renderRichText.
-//                  @storyblok/js DOES export RichTextResolver but renderRichText might be separate. 
+//                  @storyblok/js DOES export RichTextResolver but renderRichText might be separate.
 //                  Actually 'storyblok-js-client' has rich text resolver.
 //                  Let's try to use renderRichText from @storyblok/js if available or simple HTML if it's a string.
 //                  For now, we will output it carefully.

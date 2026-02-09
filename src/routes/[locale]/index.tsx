@@ -6,26 +6,23 @@ import { Services } from "~/components/services/services";
 import { History } from "~/components/history/history";
 
 export default component$(() => {
-    const title = _`home.title`;
-    const subtitle = _`home.subtitle`;
-    return (
-        <>
-            <HeroSlider
-                description={subtitle}
-                title={title}
-            />
-            <Services />
-            <History />
-        </>
-    );
+  const title = _`home.title`;
+  const subtitle = _`home.subtitle`;
+  return (
+    <>
+      <HeroSlider description={subtitle} title={title} />
+      <Services />
+      <History />
+    </>
+  );
 });
 
 export const head: DocumentHead = {
-    title: _`home.metaTitle`,
-    meta: [
-        {
-            name: "description",
-            content: _`home.metaDescription`,
-        },
-    ],
+  title: _`home.metaTitle`,
+  meta: [
+    {
+      name: "description",
+      content: _`home.metaDescription`,
+    },
+  ],
 };
