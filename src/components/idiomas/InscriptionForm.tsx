@@ -4,7 +4,7 @@ import { Button } from '~/components/ui/Button';
 import { Input } from '~/components/ui/Input';
 import { Label } from '~/components/ui/Label';
 import { Select } from '~/components/ui/Select';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/Card';
+import { Card } from '~/components/ui/card/card';
 import { LuSend, LuCheckCircle } from '@qwikest/icons/lucide';
 import { COURSES } from './CourseList';
 
@@ -20,14 +20,14 @@ export const InscriptionForm = component$<InscriptionFormProps>(({ action }) => 
     }));
 
     return (
-        <Card class="w-full max-w-2xl mx-auto shadow-xl border-t-4 border-t-green-600">
-            <CardHeader class="text-center pb-2">
-                <CardTitle class="text-2xl md:text-3xl text-gray-800">Asegura tu vacante</CardTitle>
-                <CardDescription>
+        <Card.Root class="w-full max-w-2xl mx-auto shadow-xl border-t-4 border-t-green-600">
+            <Card.Header class="text-center pb-2">
+                <Card.Title class="text-2xl md:text-3xl text-gray-800">Asegura tu vacante</Card.Title>
+                <Card.Description>
                     Completa tus datos para pre-inscribirte al Ciclo Lectivo 2026.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
+                </Card.Description>
+            </Card.Header>
+            <Card.Content>
                 {action.value?.success ? (
                     <div class="flex flex-col items-center justify-center p-8 text-center bg-green-50 rounded-lg border border-green-100 animate-in fade-in zoom-in duration-300">
                         <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
@@ -103,7 +103,7 @@ export const InscriptionForm = component$<InscriptionFormProps>(({ action }) => 
                         </div>
                     </Form>
                 )}
-            </CardContent>
-        </Card>
+            </Card.Content>
+        </Card.Root>
     );
 });

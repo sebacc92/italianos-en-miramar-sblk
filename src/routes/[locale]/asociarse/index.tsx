@@ -4,7 +4,7 @@ import { Button } from '~/components/ui/Button';
 import { Input } from '~/components/ui/Input';
 import { Label } from '~/components/ui/Label';
 import { Select } from '~/components/ui/Select';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/Card';
+import { Card } from '~/components/ui/card/card';
 import { LuCheckCircle, LuSend, LuUser, LuMail, LuPhone, LuMapPin } from '@qwikest/icons/lucide';
 import { tursoClient } from '~/utils/turso';
 import { _ } from "compiled-i18n";
@@ -116,16 +116,16 @@ export default component$(() => {
 
             {/* Form Section */}
             <section class="py-20 container mx-auto px-4 max-w-4xl">
-                <Card class="shadow-2xl border-t-4 border-t-green-600">
-                    <CardHeader class="text-center">
-                        <CardTitle class="text-3xl font-bold text-gray-800">
+                <Card.Root class="shadow-2xl border-t-4 border-t-green-600">
+                    <Card.Header class="text-center">
+                        <Card.Title class="text-3xl font-bold text-gray-800">
                             {_`joinForm.hero.title`}
-                        </CardTitle>
-                        <CardDescription class="text-lg">
+                        </Card.Title>
+                        <Card.Description class="text-lg">
                             {_`joinForm.hero.subtitle`}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                        </Card.Description>
+                    </Card.Header>
+                    <Card.Content>
                         {action.value?.success ? (
                             <div class="text-center py-12 animate-in fade-in zoom-in duration-300">
                                 <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -349,8 +349,8 @@ export default component$(() => {
                                 </div>
                             </Form>
                         )}
-                    </CardContent>
-                </Card>
+                    </Card.Content>
+                </Card.Root>
             </section>
         </div>
     );

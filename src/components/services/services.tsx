@@ -144,15 +144,15 @@ export const Services = component$(() => {
 
                     {/* Card 8: Universidad Siglo 21 */}
                     <a href="https://www.21.edu.ar/" target="_blank" rel="noopener noreferrer" class="group">
-                        <div class="h-full bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-orange-200 hover:-translate-y-2 relative overflow-hidden">
-                            <div class="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                        <div class="h-full bg-[#005696] rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-transparent hover:bg-[#004b8d] hover:-translate-y-2 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
                             <div class="relative z-10">
-                                <div class="w-14 h-14 bg-orange-100 text-orange-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                                <div class="w-14 h-14 bg-[#F39200] text-white rounded-xl flex items-center justify-center mb-6 group-hover:bg-[#FFD700] transition-colors shadow-sm">
                                     <LuGraduationCap class="w-7 h-7" />
                                 </div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-700 transition-colors">{_`services.university.title`}</h3>
-                                <p class="text-gray-600 mb-6 leading-relaxed">{_`services.university.desc`}</p>
-                                <span class="inline-flex items-center text-orange-700 font-semibold group-hover:translate-x-1 transition-transform">
+                                <h3 class="text-xl font-bold text-white mb-3 transition-colors">{_`services.university.title`}</h3>
+                                <p class="text-gray-100 mb-6 leading-relaxed">{_`services.university.desc`}</p>
+                                <span class="inline-flex items-center text-[#F39200] font-bold group-hover:translate-x-1 transition-transform group-hover:text-[#FFD700]">
                                     {_`services.university.cta`} <LuArrowRight class="ml-2 w-4 h-4" />
                                 </span>
                             </div>

@@ -4,7 +4,7 @@ import { Button } from '~/components/ui/Button';
 import { Input } from '~/components/ui/Input';
 import { Label } from '~/components/ui/Label';
 import { Select } from '~/components/ui/Select';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/Card';
+import { Card } from '~/components/ui/card/card';
 import { LuCalendarCheck, LuMapPin, LuUsers, LuCheckCircle, LuSend } from '@qwikest/icons/lucide';
 import { tursoClient } from '~/utils/turso';
 
@@ -101,7 +101,7 @@ export default component$(() => {
 
                 <div class="grid gap-8 md:grid-cols-2 max-w-5xl mx-auto mb-16">
                     {/* Salón 1 */}
-                    <Card class="overflow-hidden shadow-lg border-blue-100 hover:shadow-xl transition-shadow bg-white">
+                    <Card.Root class="overflow-hidden shadow-lg border-blue-100 hover:shadow-xl transition-shadow bg-white">
                         <div class="h-48 bg-gray-200 relative overflow-hidden group">
                             <img
                                 src="/images/salones/michelangelo.jpg"
@@ -109,11 +109,11 @@ export default component$(() => {
                                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             />
                         </div>
-                        <CardHeader>
-                            <CardTitle class="text-2xl mb-2 text-blue-900">Salón Principal "Michelangelo"</CardTitle>
-                            <CardDescription class="text-base">El escenario perfecto para grandes celebraciones.</CardDescription>
-                        </CardHeader>
-                        <CardContent class="space-y-4">
+                        <Card.Header>
+                            <Card.Title class="text-2xl mb-2 text-blue-900">Salón Principal "Michelangelo"</Card.Title>
+                            <Card.Description class="text-base">El escenario perfecto para grandes celebraciones.</Card.Description>
+                        </Card.Header>
+                        <Card.Content class="space-y-4">
                             <div class="flex items-center text-gray-600">
                                 <LuUsers class="w-5 h-5 mr-3 text-blue-600" />
                                 <span class="font-medium">Capacidad hasta 280 personas</span>
@@ -125,11 +125,11 @@ export default component$(() => {
                             <p class="text-gray-600 leading-relaxed mt-4">
                                 Un salón histórico con amplios ventanales, luz natural y vistas a la ciudad. Ideal para casamientos, fiestas de 15, cenas show y conferencias.
                             </p>
-                        </CardContent>
-                    </Card>
+                        </Card.Content>
+                    </Card.Root>
 
                     {/* Salón 2 */}
-                    <Card class="overflow-hidden shadow-lg border-blue-100 hover:shadow-xl transition-shadow bg-white">
+                    <Card.Root class="overflow-hidden shadow-lg border-blue-100 hover:shadow-xl transition-shadow bg-white">
                         <div class="h-48 bg-gray-200 relative overflow-hidden group">
                             <img
                                 src="/images/salones/giuseppe.jpg"
@@ -137,11 +137,11 @@ export default component$(() => {
                                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             />
                         </div>
-                        <CardHeader>
-                            <CardTitle class="text-2xl mb-2 text-blue-900">Salón "Giuseppe Verdi"</CardTitle>
-                            <CardDescription class="text-base">Intimidad y elegancia para eventos medianos.</CardDescription>
-                        </CardHeader>
-                        <CardContent class="space-y-4">
+                        <Card.Header>
+                            <Card.Title class="text-2xl mb-2 text-blue-900">Salón "Giuseppe Verdi"</Card.Title>
+                            <Card.Description class="text-base">Intimidad y elegancia para eventos medianos.</Card.Description>
+                        </Card.Header>
+                        <Card.Content class="space-y-4">
                             <div class="flex items-center text-gray-600">
                                 <LuUsers class="w-5 h-5 mr-3 text-blue-600" />
                                 <span class="font-medium">Capacidad hasta 90 personas</span>
@@ -153,22 +153,22 @@ export default component$(() => {
                             <p class="text-gray-600 leading-relaxed mt-4">
                                 Espacio luminoso y versátil. Perfecto para conferencias, cursos, reuniones corporativas, cumpleaños infantiles o reuniones familiares privadas.
                             </p>
-                        </CardContent>
-                    </Card>
+                        </Card.Content>
+                    </Card.Root>
                 </div>
             </section>
 
             {/* Booking Form Section */}
             <section id="booking-form" class="py-20 bg-blue-900/5 relative">
                 <div class="container mx-auto px-4 max-w-3xl">
-                    <Card class="shadow-2xl border-t-4 border-t-blue-600">
-                        <CardHeader class="text-center">
-                            <CardTitle class="text-3xl font-bold text-gray-800">Solicita tu Reserva</CardTitle>
-                            <CardDescription class="text-lg">
+                    <Card.Root class="shadow-2xl border-t-4 border-t-blue-600">
+                        <Card.Header class="text-center">
+                            <Card.Title class="text-3xl font-bold text-gray-800">Solicita tu Reserva</Card.Title>
+                            <Card.Description class="text-lg">
                                 Completa el formulario y verificaremos la disponibilidad para tu fecha.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
+                            </Card.Description>
+                        </Card.Header>
+                        <Card.Content>
                             {action.value?.success ? (
                                 <div class="text-center py-12 animate-in fade-in zoom-in duration-300">
                                     <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -269,8 +269,8 @@ export default component$(() => {
                                     </div>
                                 </Form>
                             )}
-                        </CardContent>
-                    </Card>
+                        </Card.Content>
+                    </Card.Root>
                 </div>
             </section>
         </div>

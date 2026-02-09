@@ -1,5 +1,5 @@
 import { component$ } from '@builder.io/qwik';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '~/components/ui/Card';
+import { Card } from '~/components/ui/card/card';
 import { Button } from '~/components/ui/Button';
 import { LuCheck, LuArrowRight } from '@qwikest/icons/lucide';
 
@@ -51,8 +51,8 @@ export const CourseList = component$(() => {
     return (
         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {COURSES.map((course) => (
-                <Card key={course.id} class={`flex flex-col h-full transition-all duration-300 hover:shadow-lg ${course.highlight ? 'border-green-500 shadow-md ring-1 ring-green-500 bg-green-50/30' : 'hover:border-green-200'}`}>
-                    <CardHeader class="pb-2">
+                <Card.Root key={course.id} class={`flex flex-col h-full transition-all duration-300 hover:shadow-lg ${course.highlight ? 'border-green-500 shadow-md ring-1 ring-green-500 bg-green-50/30' : 'hover:border-green-200'}`}>
+                    <Card.Header class="pb-2">
                         <div class="flex justify-between items-start mb-2">
                             <span class={`text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wider ${course.language === 'italiano' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
                                 {course.language}
@@ -63,10 +63,10 @@ export const CourseList = component$(() => {
                                 </span>
                             )}
                         </div>
-                        <CardTitle class="text-xl text-gray-900">{course.title}</CardTitle>
+                        <Card.Title class="text-xl text-gray-900">{course.title}</Card.Title>
                         <p class="text-sm text-gray-500 font-medium">{course.level}</p>
-                    </CardHeader>
-                    <CardContent class="flex-grow">
+                    </Card.Header>
+                    <Card.Content class="flex-grow">
                         <p class="text-gray-600 text-sm mb-4 leading-relaxed">
                             {course.description}
                         </p>
@@ -81,8 +81,8 @@ export const CourseList = component$(() => {
                         <div class="text-xs text-gray-400 mt-auto pt-2 border-t border-gray-100">
                             🕐 {course.schedule}
                         </div>
-                    </CardContent>
-                    <CardFooter>
+                    </Card.Content>
+                    <Card.Footer>
                         <Button
                             variant={course.highlight ? 'primary' : 'outline'}
                             fullWidth
@@ -92,8 +92,8 @@ export const CourseList = component$(() => {
                         >
                             Ver más <LuArrowRight class="ml-2 w-4 h-4" />
                         </Button>
-                    </CardFooter>
-                </Card>
+                    </Card.Footer>
+                </Card.Root>
             ))}
         </div>
     );

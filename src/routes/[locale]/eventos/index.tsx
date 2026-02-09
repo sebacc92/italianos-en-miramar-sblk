@@ -1,6 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import { type DocumentHead, routeLoader$, Link } from "@builder.io/qwik-city";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/Card";
+import { Card } from "~/components/ui/card/card";
 import { Button } from "~/components/ui/Button";
 import { _ } from "compiled-i18n";
 import { generateI18nPaths } from "~/utils/i18n-utils";
@@ -126,7 +126,7 @@ export default component$(() => {
                                     const slug = evento.full_slug.replace(`${currentLocale}/eventos/`, '');
 
                                     return (
-                                        <Card key={evento.uuid} class="overflow-hidden hover:shadow-xl transition-shadow">
+                                        <Card.Root key={evento.uuid} class="overflow-hidden hover:shadow-xl transition-shadow">
                                             {evento.content.imagen?.filename && (
                                                 <div class="h-48 bg-gray-200 overflow-hidden">
                                                     <img
@@ -139,18 +139,18 @@ export default component$(() => {
                                                     />
                                                 </div>
                                             )}
-                                            <CardHeader>
+                                            <Card.Header>
                                                 <div class="flex items-center text-sm text-gray-500 mb-2">
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
                                                     </svg>
                                                     {formatDate(evento.content.fecha)}
                                                 </div>
-                                                <CardTitle class="text-xl mb-2 line-clamp-2">
+                                                <Card.Title class="text-xl mb-2 line-clamp-2">
                                                     {evento.content.titulo}
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
+                                                </Card.Title>
+                                            </Card.Header>
+                                            <Card.Content>
                                                 {evento.content.descripcion && (
                                                     <div
                                                         class="text-gray-600 mb-4 line-clamp-3 prose prose-sm max-w-none"
@@ -165,8 +165,8 @@ export default component$(() => {
                                                         </svg>
                                                     </Button>
                                                 </Link>
-                                            </CardContent>
-                                        </Card>
+                                            </Card.Content>
+                                        </Card.Root>
                                     );
                                 })}
                             </div>
