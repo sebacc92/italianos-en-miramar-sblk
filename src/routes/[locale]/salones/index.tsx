@@ -1,4 +1,5 @@
 import { component$ } from "@builder.io/qwik";
+import { _ } from "compiled-i18n";
 import {
   type DocumentHead,
   routeAction$,
@@ -480,20 +481,30 @@ export default component$(() => {
                   </div>
 
                   <div class="pt-4">
-                    <Button
-                      type="submit"
-                      fullWidth
-                      disabled={action.isRunning}
-                      class="h-12 bg-blue-600 text-base hover:bg-blue-700"
-                    >
-                      {action.isRunning ? (
-                        "Enviando Solicitud..."
-                      ) : (
-                        <>
-                          Enviar Consulta <LuSend class="ml-2 h-4 w-4" />
-                        </>
-                      )}
-                    </Button>
+                    <div class="flex flex-col gap-4 sm:flex-row">
+                      <Button
+                        type="submit"
+                        disabled={action.isRunning}
+                        class="h-12 flex-1 bg-blue-600 text-base hover:bg-blue-700"
+                      >
+                        {action.isRunning ? (
+                          "Enviando Solicitud..."
+                        ) : (
+                          <>
+                            {_`halls.bookBtn`} <LuSend class="ml-2 h-4 w-4" />
+                          </>
+                        )}
+                      </Button>
+
+                      <a
+                        href="https://wa.me/5492291514011"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex h-12 flex-1 items-center justify-center rounded-md bg-[#25D366] text-base font-medium text-white shadow-sm transition-colors hover:bg-[#128C7E] focus:outline-none focus:ring-2 focus:ring-[#25D366] focus:ring-offset-2"
+                      >
+                        {_`halls.whatsappBtn`}
+                      </a>
+                    </div>
                   </div>
                 </Form>
               )}
