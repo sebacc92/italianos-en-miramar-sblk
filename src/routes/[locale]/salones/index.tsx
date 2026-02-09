@@ -11,12 +11,21 @@ import { Input } from "~/components/ui/Input";
 import { Label } from "~/components/ui/Label";
 import { Select } from "~/components/ui/Select";
 import { Card } from "~/components/ui/card/card";
+import { Accordion } from "~/components/ui";
 import {
   LuCalendarCheck,
   LuMapPin,
   LuUsers,
   LuCheckCircle,
   LuSend,
+  LuUtensils,
+  LuWifi,
+  LuMusic,
+  LuSnowflake,
+  LuProjector,
+  LuShieldCheck,
+  LuClock,
+  LuArmchair,
 } from "@qwikest/icons/lucide";
 import { tursoClient } from "~/utils/turso";
 
@@ -92,7 +101,7 @@ export default component$(() => {
         <div class="absolute inset-0 bg-black/40"></div>
         <div class="relative z-10 container mx-auto px-4 py-24 text-center md:py-32">
           <h1 class="animate-in fade-in slide-in-from-bottom-6 mb-6 text-4xl leading-tight font-bold duration-700 md:text-6xl">
-            Alquiler de Salones
+            Alquiler de Salones para Eventos en Miramar
           </h1>
           <p class="animate-in fade-in slide-in-from-bottom-8 mx-auto mb-10 max-w-2xl text-xl leading-relaxed text-gray-200 delay-200 duration-700 md:text-2xl">
             Espacios versátiles e históricos para que tu evento sea inolvidable.
@@ -131,7 +140,7 @@ export default component$(() => {
             <div class="group relative h-48 overflow-hidden bg-gray-200">
               <img
                 src="/images/salones/michelangelo.jpg"
-                alt="Salón Michelangelo"
+                alt="Salón de fiestas Michelangelo en Miramar para bodas y conferencias"
                 class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
             </div>
@@ -140,7 +149,7 @@ export default component$(() => {
                 Salón Principal "Michelangelo"
               </Card.Title>
               <Card.Description class="text-base">
-                El escenario perfecto para grandes celebraciones.
+                El escenario perfecto para grandes celebraciones. Ideal para fiestas de 15 en Miramar, casamientos grandes y eventos corporativos...
               </Card.Description>
             </Card.Header>
             <Card.Content class="space-y-4">
@@ -193,6 +202,108 @@ export default component$(() => {
               </p>
             </Card.Content>
           </Card.Root>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section class="bg-gray-50 py-20">
+        <div class="container mx-auto px-4">
+          <div class="mb-12 text-center">
+            <h2 class="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+              Servicios Incluidos y Adicionales
+            </h2>
+            <div class="mx-auto h-1 w-16 rounded-full bg-blue-600"></div>
+            <p class="mt-4 text-lg text-gray-600">Todo lo que necesitas para que tu evento sea un éxito.</p>
+          </div>
+
+          <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: LuUtensils, title: "Cocina Equipada", desc: "Instalaciones completas para catering." },
+              { icon: LuWifi, title: "Conectividad Wi-Fi", desc: "Internet de alta velocidad disponible." },
+              { icon: LuMusic, title: "Sonido Básico", desc: "Sistema de audio para música y voz." },
+              { icon: LuSnowflake, title: "Climatización", desc: "Aire acondicionado y calefacción." },
+              { icon: LuProjector, title: "Proyector", desc: "Proyector visual (consultar disponibilidad)." },
+              { icon: LuShieldCheck, title: "Cobertura Médica", desc: "Área protegida para emergencias." },
+              { icon: LuClock, title: "Horarios Flexibles", desc: "Adaptamos el alquiler a tus necesidades." },
+              { icon: LuArmchair, title: "Mobiliario", desc: "Mesas y sillas incluidas." },
+            ].map((service, index) => (
+              <div key={index} class="flex flex-col items-center text-center p-6 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="p-3 mb-4 rounded-full bg-blue-50 text-blue-600">
+                  <service.icon class="h-8 w-8" />
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{service.title}</h3>
+                <p class="text-sm text-gray-600">{service.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section class="bg-white py-20">
+        <div class="container mx-auto max-w-3xl px-4">
+          <div class="mb-12 text-center">
+            <h2 class="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+              Preguntas Frecuentes
+            </h2>
+            <div class="mx-auto h-1 w-16 rounded-full bg-blue-600"></div>
+          </div>
+
+          <Accordion.Root class="w-full space-y-4">
+            <Accordion.Item value="item-1">
+              <Accordion.Trigger class="text-lg font-medium text-gray-800 hover:text-blue-600">
+                ¿Cómo puedo reservar un salón?
+              </Accordion.Trigger>
+              <Accordion.Content class="text-gray-600">
+                Puede realizar una reserva completando el formulario más abajo en esta página, llamándonos directamente o visitando nuestra secretaría. Le recomendamos reservar con al menos 2 meses de anticipación para asegurar la fecha deseada.
+              </Accordion.Content>
+            </Accordion.Item>
+
+            <Accordion.Item value="item-2">
+              <Accordion.Trigger class="text-lg font-medium text-gray-800 hover:text-blue-600">
+                ¿Ofrecen servicio de catering?
+              </Accordion.Trigger>
+              <Accordion.Content class="text-gray-600">
+                Contamos con una lista de proveedores de catering recomendados que conocen nuestras instalaciones, pero también puede traer su propio servicio de catering de confianza. Consulte por nuestras opciones de menú italiano tradicional si busca una experiencia temática.
+              </Accordion.Content>
+            </Accordion.Item>
+
+            <Accordion.Item value="item-3">
+              <Accordion.Trigger class="text-lg font-medium text-gray-800 hover:text-blue-600">
+                ¿Qué instalaciones y equipamiento incluyen?
+              </Accordion.Trigger>
+              <Accordion.Content class="text-gray-600">
+                Nuestros salones incluyen sistema de sonido básico (consultar alcance), mesas y sillas. Por un costo adicional o mediante proveedores externos, puede solicitar iluminación especial, decoración temática y equipamiento audiovisual avanzado.
+              </Accordion.Content>
+            </Accordion.Item>
+
+            <Accordion.Item value="item-4">
+              <Accordion.Trigger class="text-lg font-medium text-gray-800 hover:text-blue-600">
+                ¿Se puede llevar catering externo?
+              </Accordion.Trigger>
+              <Accordion.Content class="text-gray-600">
+                Sí, permitimos servicios de catering externos. Sin embargo, el proveedor debe coordinar previamente con nuestra administración para conocer las instalaciones de cocina y los requisitos de limpieza y orden.
+              </Accordion.Content>
+            </Accordion.Item>
+
+            <Accordion.Item value="item-5">
+              <Accordion.Trigger class="text-lg font-medium text-gray-800 hover:text-blue-600">
+                ¿Hasta qué hora se puede alquilar?
+              </Accordion.Trigger>
+              <Accordion.Content class="text-gray-600">
+                El horario límite para eventos nocturnos suele ser hasta las 5:00 AM, respetando las normativas municipales vigentes. Para eventos diurnos o corporativos, los horarios son flexibles según la necesidad.
+              </Accordion.Content>
+            </Accordion.Item>
+
+            <Accordion.Item value="item-6">
+              <Accordion.Trigger class="text-lg font-medium text-gray-800 hover:text-blue-600">
+                ¿El edificio cuenta con seguro/cobertura médica?
+              </Accordion.Trigger>
+              <Accordion.Content class="text-gray-600">
+                Sí, el Círculo Italiano cuenta con seguro de responsabilidad civil y servicio de área protegida para emergencias médicas durante el desarrollo de los eventos dentro de nuestras instalaciones.
+              </Accordion.Content>
+            </Accordion.Item>
+          </Accordion.Root>
         </div>
       </section>
 
@@ -395,7 +506,7 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Alquiler de Salones - Círculo Italiano Miramar",
+  title: "Alquiler de Salones en Miramar para Eventos y Fiestas | Círculo Italiano",
   meta: [
     {
       name: "description",
