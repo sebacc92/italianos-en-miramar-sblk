@@ -1,6 +1,8 @@
 onlyBuiltDependencies:
-  - "@parcel/watcher"
+  - '@parcel/watcher'
+  - deasync
   - esbuild
   - less
   - nx
   - sharp
+  - vercel

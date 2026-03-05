@@ -1,5 +1,5 @@
 import { component$ } from "@builder.io/qwik";
-import { type DocumentHead, routeLoader$, Link } from "@builder.io/qwik-city";
+import { type DocumentHead, routeLoader$, Link, useLocation } from "@builder.io/qwik-city";
 import { Card } from "~/components/ui/card/card";
 import { Button } from "~/components/ui/Button";
 import { _ } from "compiled-i18n";
@@ -65,7 +65,8 @@ export const useEventos = routeLoader$(async ({ params, env }) => {
 
 export default component$(() => {
   const eventos = useEventos();
-  const currentLocale = eventos.value[0]?.full_slug.split("/")[0] || "es";
+  const loc = useLocation();
+  const currentLocale = loc.params.locale || "es";
 
   // Helper to format date
   const formatDate = (dateString: string) => {
@@ -134,10 +135,8 @@ export default component$(() => {
             ) : (
               <div class="mx-auto grid max-w-7xl gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {eventos.value.map((evento) => {
-                  const slug = evento.full_slug.replace(
-                    `${currentLocale}/eventos/`,
-                    "",
-                  );
+                  const slugParts = evento.full_slug.split("/").filter(Boolean);
+                  const slug = slugParts[slugParts.length - 1];
 
                   return (
                     <Card.Root
