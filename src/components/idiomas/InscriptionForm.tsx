@@ -6,18 +6,17 @@ import { Label } from "~/components/ui/Label";
 import { Select } from "~/components/ui/Select";
 import { Card } from "~/components/ui/card/card";
 import { LuSend, LuCheckCircle } from "@qwikest/icons/lucide";
-import { COURSES } from "./CourseList";
-
 interface InscriptionFormProps {
   action: ActionStore<any, any>;
+  courses: Array<{ id: number; title: string; schedule: string | null }>;
 }
 
 export const InscriptionForm = component$<InscriptionFormProps>(
-  ({ action }) => {
+  ({ action, courses }) => {
     // Opciones para el select basadas en los cursos disponibles
-    const courseOptions = COURSES.map((c) => ({
-      label: `${c.title} (${c.schedule})`,
-      value: c.id,
+    const courseOptions = courses.map((c) => ({
+      label: `${c.title} (${c.schedule || 'Consultar horario'})`,
+      value: String(c.id),
     }));
 
     return (
@@ -52,9 +51,9 @@ export const InscriptionForm = component$<InscriptionFormProps>(
             </div>
           ) : (
             <Form action={action} class="space-y-6">
-              {action.value?.message && !action.value.success && (
-                <div class="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                  {action.value.message}
+              {action.value && (
+                <div class={`rounded-xl p-4 text-center text-lg font-medium shadow-sm border ${action.value.success ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-800'}`}>
+                  {String(action.value.message)}
                 </div>
               )}
 

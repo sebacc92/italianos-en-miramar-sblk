@@ -4,61 +4,24 @@ import { Card } from "~/components/ui/card/card";
 import { Button } from "~/components/ui/Button";
 import { _ } from "compiled-i18n";
 import { generateI18nPaths } from "~/utils/i18n-utils";
-import { renderRichText } from "@storyblok/js";
-
-interface EventContent {
-  titulo: string;
-  descripcion?: any; // Storyblok Rich Text object
-  fecha: string;
-  imagen?: {
-    filename: string;
-    alt?: string;
-  };
-}
-
-interface EventStory {
-  uuid: string;
-  full_slug: string;
-  content: EventContent;
-}
+import { getDb } from "~/db/client.server";
+import { events } from "~/db/schema.server";
+import { eq, desc } from "drizzle-orm";
 
 export const useEventos = routeLoader$(async ({ params, env }) => {
-  const { locale } = params;
-
-  // Get token from server environment
-  const token = env.get("PUBLIC_STORYBLOK_TOKEN");
-
-  if (!token) {
-    console.error("Storyblok token not configured in environment");
-    return [];
-  }
-
+  const db = getDb(env);
+  const locale = params.locale || "es";
+  
   try {
-    // Initialize Storyblok client directly
-    const StoryblokClient = (await import("storyblok-js-client")).default;
-    const client = new StoryblokClient({
-      accessToken: token,
-    });
-
-    const { data } = await client.get("cdn/stories", {
-      version: "published",
-      starts_with: "eventos/",
-      is_startpage: false,
-      language: locale || "es",
-    });
-
-    // Sort by date (descending - most recent first)
-    const eventos = (data.stories || []).sort(
-      (a: EventStory, b: EventStory) => {
-        const dateA = new Date(a.content.fecha).getTime();
-        const dateB = new Date(b.content.fecha).getTime();
-        return dateB - dateA;
-      },
-    );
-
-    return eventos as EventStory[];
+    const eventos = await db
+      .select()
+      .from(events)
+      .where(eq(events.language, locale as any))
+      .orderBy(desc(events.eventDate));
+      
+    return eventos;
   } catch (error) {
-    console.error("Error fetching eventos from Storyblok:", error);
+    console.error("Error fetching eventos from Drizzle:", error);
     return [];
   }
 });
@@ -69,16 +32,11 @@ export default component$(() => {
   const currentLocale = loc.params.locale || "es";
 
   // Helper to format date
-  const formatDate = (dateString: string) => {
-    // 1. Si no hay string, retornamos texto por defecto
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return "Fecha por confirmar";
 
     const date = new Date(dateString);
-
-    // 2. Verificamos si la fecha es válida matemáticamente
-    if (isNaN(date.getTime())) {
-      return "Fecha por confirmar";
-    }
+    if (isNaN(date.getTime())) return "Fecha por confirmar";
 
     try {
       return new Intl.DateTimeFormat(currentLocale, {
@@ -87,7 +45,7 @@ export default component$(() => {
         day: "numeric",
       }).format(date);
     } catch {
-      return dateString; // Fallback
+      return dateString;
     }
   };
 
@@ -134,83 +92,75 @@ export default component$(() => {
               </div>
             ) : (
               <div class="mx-auto grid max-w-7xl gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {eventos.value.map((evento) => {
-                  const slugParts = evento.full_slug.split("/").filter(Boolean);
-                  const slug = slugParts[slugParts.length - 1];
-
-                  return (
-                    <Card.Root
-                      key={evento.uuid}
-                      class="overflow-hidden transition-shadow hover:shadow-xl"
-                    >
-                      {evento.content.imagen?.filename && (
-                        <div class="h-48 overflow-hidden bg-gray-200">
-                          <img
-                            src={`${evento.content.imagen.filename}/m/600x400/smart`}
-                            alt={
-                              evento.content.imagen.alt || evento.content.titulo
-                            }
-                            class="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                            width="600"
-                            height="400"
-                            loading="lazy"
+                {eventos.value.map((evento) => (
+                  <Card.Root
+                    key={evento.id}
+                    class="overflow-hidden transition-shadow hover:shadow-xl"
+                  >
+                    {evento.imageUrl && (
+                      <div class="h-48 overflow-hidden bg-gray-200">
+                        <img
+                          src={evento.imageUrl}
+                          alt={evento.imageAlt || evento.title}
+                          class="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                          width="600"
+                          height="400"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+                    <Card.Header>
+                      <div class="mb-2 flex items-center text-sm text-gray-500">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="mr-2 h-4 w-4"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
                           />
-                        </div>
+                        </svg>
+                        {evento.eventDate ? formatDate(evento.eventDate) : "Fecha por confirmar"}
+                      </div>
+                    </Card.Header>
+                    <Card.Content>
+                      <Card.Title class="mb-2 line-clamp-2 text-xl">
+                        {evento.title}
+                      </Card.Title>
+                      {evento.description && (
+                        <p class="mb-4 line-clamp-3 text-sm text-gray-600">
+                          {evento.description}
+                        </p>
                       )}
-                      <Card.Header>
-                        <div class="mb-2 flex items-center text-sm text-gray-500">
+                      
+                      {/* Aquí pasamos el ID en lugar del slug */}
+                      <Link href={`/${currentLocale}/eventos/${evento.id}`}>
+                        <Button variant="outline" fullWidth class="group">
+                          {_`events.viewMore`}
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
-                            stroke-width="1.5"
+                            stroke-width="2"
                             stroke="currentColor"
-                            class="mr-2 h-4 w-4"
+                            class="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
                           >
                             <path
                               stroke-linecap="round"
                               stroke-linejoin="round"
-                              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+                              d="m8.25 4.5 7.5 7.5-7.5 7.5"
                             />
                           </svg>
-                          {formatDate(evento.content.fecha)}
-                        </div>
-                        <Card.Title class="mb-2 line-clamp-2 text-xl">
-                          {evento.content.titulo}
-                        </Card.Title>
-                      </Card.Header>
-                      <Card.Content>
-                        {evento.content.descripcion && (
-                          <div
-                            class="prose prose-sm mb-4 line-clamp-3 max-w-none text-gray-600"
-                            dangerouslySetInnerHTML={renderRichText(
-                              evento.content.descripcion,
-                            )}
-                          />
-                        )}
-                        <Link href={`/${currentLocale}/eventos/${slug}`}>
-                          <Button variant="outline" fullWidth class="group">
-                            {_`events.viewMore`}
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke-width="2"
-                              stroke="currentColor"
-                              class="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                              />
-                            </svg>
-                          </Button>
-                        </Link>
-                      </Card.Content>
-                    </Card.Root>
-                  );
-                })}
+                        </Button>
+                      </Link>
+                    </Card.Content>
+                  </Card.Root>
+                ))}
               </div>
             )}
           </div>

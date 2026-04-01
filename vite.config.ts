@@ -25,6 +25,14 @@ errorOnDuplicatesPkgDeps(devDependencies, dependencies);
 export default defineConfig(({ command, mode }): UserConfig => {
   return {
     plugins: [
+      {
+        name: 'trace-sqlite',
+        resolveId(source, importer) {
+          if (source.includes('@libsql') || source.includes('drizzle-orm/libsql')) {
+            console.log(`\n\n🎯 SQLITE LEAK: ${source} \n   IMPORTED BY: ${importer}\n\n`);
+          }
+        }
+      },
       command === "serve" ? mkcert() : undefined,
       qwikCity(),
       qwikVite(),
@@ -41,6 +49,11 @@ export default defineConfig(({ command, mode }): UserConfig => {
     /**
      * This is an advanced setting. It improves the bundling of your server code. To use it, make sure you understand when your consumed packages are dependencies or dev dependencies. (otherwise things will break in production)
     */
+    build: {
+      rollupOptions: {
+        external: ['@libsql/client', '@libsql/client/web', 'drizzle-orm/libsql', 'node:buffer', 'node:fs', 'node:path', 'node:child_process']
+      }
+    },
     // ssr:
     //   command === "build" && mode === "production"
     //     ? {

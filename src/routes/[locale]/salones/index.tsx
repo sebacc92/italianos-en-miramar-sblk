@@ -2,6 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import { _ } from "compiled-i18n";
 import {
   type DocumentHead,
+  routeLoader$,
   routeAction$,
   zod$,
   z,
@@ -15,8 +16,6 @@ import { Card } from "~/components/ui/card/card";
 import { Accordion } from "~/components/ui";
 import {
   LuCalendarCheck,
-  LuMapPin,
-  LuUsers,
   LuCheckCircle,
   LuSend,
   LuUtensils,
@@ -28,7 +27,24 @@ import {
   LuClock,
   LuArmchair,
 } from "@qwikest/icons/lucide";
-import { tursoClient } from "~/utils/turso";
+import { tursoClient } from "~/utils/turso.server";
+import { getDb } from "~/db/client.server";
+import { services } from "~/db/schema.server";
+import { eq, and, desc } from "drizzle-orm";
+
+export const useSalones = routeLoader$(async ({ params, env }) => {
+  const db = getDb(env);
+  const locale = params.locale || "es";
+  try {
+    const res = await db.select().from(services)
+      .where(and(eq(services.language, locale as any), eq(services.category, "salon")))
+      .orderBy(desc(services.displayOrder));
+    return res;
+  } catch (error) {
+    console.error("Error fetching salones from DB:", error);
+    return [];
+  }
+});
 
 export const useRentHall = routeAction$(
   async (data, requestEvent) => {
@@ -78,14 +94,13 @@ export const useRentHall = routeAction$(
 
 export default component$(() => {
   const action = useRentHall();
+  const salonesData = useSalones();
 
-  const hallOptions = [
-    {
-      label: 'Salón Principal "Michelangelo" (280 personas)',
-      value: "michelangelo",
-    },
-    { label: 'Salón "Giuseppe Verdi" (90 personas)', value: "giuseppe_verdi" },
-  ];
+  // Generamos options para el selector de presupuesto según la DB
+  const hallOptions = salonesData.value.map(salon => ({
+    label: salon.title,
+    value: salon.slug || salon.id.toString(),
+  }));
 
   const eventTypeOptions = [
     { label: "Cumpleaños / 15 Años", value: "cumpleanos" },
@@ -135,75 +150,47 @@ export default component$(() => {
           </p>
         </div>
 
-        <div class="mx-auto mb-16 grid max-w-5xl gap-8 md:grid-cols-2">
-          {/* Salón 1 */}
-          <Card.Root class="overflow-hidden border-blue-100 bg-white shadow-lg transition-shadow hover:shadow-xl">
-            <div class="group relative h-48 overflow-hidden bg-gray-200">
-              <img
-                src="/images/salones/michelangelo.jpg"
-                alt="Salón de fiestas Michelangelo en Miramar para bodas y conferencias"
-                class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-            </div>
-            <Card.Header>
-              <Card.Title class="mb-2 text-2xl text-blue-900">
-                Salón Principal "Michelangelo"
-              </Card.Title>
-              <Card.Description class="text-base">
-                El escenario perfecto para grandes celebraciones. Ideal para fiestas de 15 en Miramar, casamientos grandes y eventos corporativos...
-              </Card.Description>
-            </Card.Header>
-            <Card.Content class="space-y-4">
-              <div class="flex items-center text-gray-600">
-                <LuUsers class="mr-3 h-5 w-5 text-blue-600" />
-                <span class="font-medium">Capacidad hasta 280 personas</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <LuMapPin class="mr-3 h-5 w-5 text-blue-600" />
-                <span>1er Piso - Accesible</span>
-              </div>
-              <p class="mt-4 leading-relaxed text-gray-600">
-                Un salón histórico con amplios ventanales, luz natural y vistas
-                a la ciudad. Ideal para casamientos, fiestas de 15, cenas show y
-                conferencias.
-              </p>
-            </Card.Content>
-          </Card.Root>
-
-          {/* Salón 2 */}
-          <Card.Root class="overflow-hidden border-blue-100 bg-white shadow-lg transition-shadow hover:shadow-xl">
-            <div class="group relative h-48 overflow-hidden bg-gray-200">
-              <img
-                src="/images/salones/giuseppe.jpg"
-                alt="Salón Giuseppe Verdi"
-                class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-            </div>
-            <Card.Header>
-              <Card.Title class="mb-2 text-2xl text-blue-900">
-                Salón "Giuseppe Verdi"
-              </Card.Title>
-              <Card.Description class="text-base">
-                Intimidad y elegancia para eventos medianos.
-              </Card.Description>
-            </Card.Header>
-            <Card.Content class="space-y-4">
-              <div class="flex items-center text-gray-600">
-                <LuUsers class="mr-3 h-5 w-5 text-blue-600" />
-                <span class="font-medium">Capacidad hasta 90 personas</span>
-              </div>
-              <div class="flex items-center text-gray-600">
-                <LuMapPin class="mr-3 h-5 w-5 text-blue-600" />
-                <span>2do Piso</span>
-              </div>
-              <p class="mt-4 leading-relaxed text-gray-600">
-                Espacio luminoso y versátil. Perfecto para conferencias, cursos,
-                reuniones corporativas, cumpleaños infantiles o reuniones
-                familiares privadas.
-              </p>
-            </Card.Content>
-          </Card.Root>
-        </div>
+        {salonesData.value.length === 0 ? (
+          <div class="py-12 text-center text-gray-500">
+            <h3 class="mb-2 text-xl font-bold">Aún no hay salones</h3>
+            <p>Los salones pronto estarán disponibles.</p>
+          </div>
+        ) : (
+          <div class="mx-auto mb-16 grid max-w-5xl gap-8 md:grid-cols-2">
+            {salonesData.value.map((salon) => (
+              <Card.Root key={salon.id} class="overflow-hidden border-blue-100 bg-white shadow-lg transition-shadow hover:shadow-xl">
+                {salon.imageUrl && (
+                  <div class="group relative h-48 overflow-hidden bg-gray-200">
+                    <img
+                      src={salon.imageUrl}
+                      alt={salon.title}
+                      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  </div>
+                )}
+                <Card.Header>
+                  <Card.Title class="mb-2 text-2xl text-blue-900">
+                    {salon.title}
+                  </Card.Title>
+                  <Card.Description class="text-base">
+                    {salon.description}
+                  </Card.Description>
+                </Card.Header>
+                <Card.Content class="space-y-4">
+                  {/* Si requirieramos parsear metadata como capacidad, podríamos hacerlo via un campo json, 
+                      pero para ahora solo pasamos texto base asumiendo description o un link CTA */}
+                  {salon.ctaText && (
+                    <div class="mt-4 border-t pt-4">
+                      <a href={salon.link} target={salon.isExternal ? "_blank" : "_self"} class="text-blue-600 hover:underline font-semibold flex items-center">
+                        {salon.ctaText}
+                      </a>
+                    </div>
+                  )}
+                </Card.Content>
+              </Card.Root>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Services Section */}
@@ -414,7 +401,7 @@ export default component$(() => {
                       <Select
                         name="salon"
                         id="salon"
-                        options={hallOptions}
+                        options={hallOptions.length > 0 ? hallOptions : [{ label: "General", value: "general" }]}
                         placeholder="Selecciona un salón"
                       />
                       {action.value?.fieldErrors?.salon && (

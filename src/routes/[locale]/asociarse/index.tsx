@@ -19,7 +19,7 @@ import {
   LuPhone,
   LuMapPin,
 } from "@qwikest/icons/lucide";
-import { tursoClient } from "~/utils/turso";
+import { tursoClient } from "~/utils/turso.server";
 import { _ } from "compiled-i18n";
 import { generateI18nPaths } from "~/utils/i18n-utils";
 

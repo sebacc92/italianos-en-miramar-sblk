@@ -3,7 +3,12 @@
     "allowJs": true,
     "target": "ES2020",
     "module": "ES2022",
-    "lib": ["es2022", "DOM", "WebWorker", "DOM.Iterable"],
+    "lib": [
+      "es2022",
+      "DOM",
+      "WebWorker",
+      "DOM.Iterable"
+    ],
     "jsx": "react-jsx",
     "jsxImportSource": "@builder.io/qwik",
     "strict": true,
@@ -17,7 +22,9 @@
     "outDir": "tmp",
     "noEmit": true,
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": [
+        "./src/*"
+      ]
     },
     "plugins": [
       {
@@ -25,5 +32,9 @@
       }
     ]
   },
-  "include": ["src", "./*.d.ts", "./*.config.ts"]
+  "include": [
+    "src",
+    "./*.d.ts",
+    "./*.config.ts"
+  ]
 }

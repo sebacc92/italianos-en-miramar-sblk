@@ -1,6 +1,7 @@
 import { component$ } from "@builder.io/qwik";
 import {
   type DocumentHead,
+  routeLoader$,
   routeAction$,
   zod$,
   z,
@@ -8,12 +9,35 @@ import {
 import { CourseList } from "~/components/idiomas/CourseList";
 import { InscriptionForm } from "~/components/idiomas/InscriptionForm";
 import { Button } from "~/components/ui/Button";
-import { tursoClient } from "~/utils/turso"; // Importamos tu utilidad
+import { getDb } from "~/db/client.server";
+import { courses } from "~/db/schema.server";
+import { eq, desc } from "drizzle-orm";
+// Este utils/turso sigue usándose para la InscriptionForm asumiendo que es legacy/otra app config,
+// Si "tursoClient" usa env, asegurémonos que funciona
+import { tursoClient } from "~/utils/turso.server"; 
+
+export const useCourses = routeLoader$(async ({ params, env }) => {
+  const db = getDb(env);
+  const locale = params.locale || "es";
+  
+  try {
+    const res = await db
+      .select()
+      .from(courses)
+      .where(eq(courses.language, locale as any))
+      .orderBy(desc(courses.displayOrder));
+    
+    return res;
+  } catch (error) {
+    console.error("Error fetching courses from DB:", error);
+    return [];
+  }
+});
 
 export const useSubmitInscription = routeAction$(
   async (data, requestEvent) => {
     try {
-      // Usamos la utilidad centralizada, igual que en tu otro proyecto
+      // Usamos la utilidad centralizada heredada del lprc/script legacy
       const db = tursoClient(requestEvent);
 
       await db.execute({
@@ -27,11 +51,6 @@ export const useSubmitInscription = routeAction$(
       };
     } catch (e: any) {
       console.error("Error saving inscription:", e);
-
-      // Manejo de errores específico (opcional, pero útil si quisieras validar duplicados como en el otro proyecto)
-      /* if (e.code === 'SQLITE_CONSTRAINT') { ... }
-       */
-
       return {
         success: false,
         message:
@@ -49,6 +68,8 @@ export const useSubmitInscription = routeAction$(
 
 export default component$(() => {
   const action = useSubmitInscription();
+  const cursos = useCourses();
+
   return (
     <div class="flex min-h-screen flex-col bg-gray-50">
       {/* Hero Section */}
@@ -109,7 +130,7 @@ export default component$(() => {
           </p>
         </div>
 
-        <CourseList />
+        <CourseList courses={cursos.value} />
       </section>
 
       {/* Pricing Section */}
@@ -175,7 +196,7 @@ export default component$(() => {
         <div class="absolute inset-x-0 top-0 h-40 bg-gray-50"></div>
 
         <div class="relative z-10 container mx-auto px-4">
-          <InscriptionForm action={action} />
+          <InscriptionForm action={action} courses={cursos.value} />
         </div>
       </section>
     </div>
@@ -183,7 +204,7 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Cursos de Idiomas - Círculo Italiano Joven Italia",
+  title: "Cursos de Idiomas - Círculo Italiano",
   meta: [
     {
       name: "description",
@@ -192,3 +213,4 @@ export const head: DocumentHead = {
     },
   ],
 };
+
