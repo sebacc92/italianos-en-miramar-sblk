@@ -77,7 +77,7 @@ export const COURSES = [
       "Canciones tradicionales",
       "Aprendizaje natural",
     ],
-    schedule: "Próximamente",
+    schedule: "Martes de 10 a 11 hs",
     highlight: false,
   },
   {
