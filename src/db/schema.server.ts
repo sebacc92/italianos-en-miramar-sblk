@@ -20,10 +20,11 @@ export const events = sqliteTable("events", {
   slug: text("slug").notNull(),
   language: text("language", { enum: ["es", "it"] }).notNull().default("es"),
   title: text("title").notNull(),
-  description: text("description"), // Richterxt / HTML content
+  description: text("description"), // HTML content
   imageUrl: text("image_url"),
   imageAlt: text("image_alt"),
-  eventDate: text("event_date"), // ISO 8601 string or simple formatted date
+  eventDate: text("event_date"), // ISO 8601 string
+  gallery: text("gallery", { mode: "json" }), // array of URLs
   createdAt: integer("created_at", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`
   ),

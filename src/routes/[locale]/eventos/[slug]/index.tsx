@@ -62,16 +62,31 @@ export default component$(() => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Fecha por confirmar";
     try {
-      return new Intl.DateTimeFormat(currentLocale, {
+      const formattedDate = new Intl.DateTimeFormat(currentLocale, {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric'
       }).format(date);
+      
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      
+      return `${formattedDate} - ${hours}:${minutes} hs`;
     } catch {
       return dateString;
     }
   };
+
+  // Parse gallery safely
+  let galleryUrls: string[] = [];
+  if (content.gallery) {
+    try {
+      galleryUrls = typeof content.gallery === 'string' ? JSON.parse(content.gallery) : content.gallery;
+    } catch {
+      galleryUrls = [];
+    }
+  }
 
   return (
     <div class="container mx-auto px-4 py-8">
@@ -83,35 +98,57 @@ export default component$(() => {
           Volver a Eventos
         </Link>
       </div>
-      <article class="mx-auto max-w-3xl overflow-hidden rounded-lg bg-white shadow-lg">
+      <article class="mx-auto max-w-4xl overflow-hidden rounded-lg bg-white shadow-lg">
         {content.imageUrl && (
-          <img
-            src={content.imageUrl}
-            alt={content.imageAlt || content.title}
-            class="h-96 w-full object-cover"
-            width="800"
-            height="400"
-          />
+           <div class="h-64 sm:h-80 md:h-96 overflow-hidden">
+             <img
+               src={content.imageUrl}
+               alt={content.imageAlt || content.title}
+               class="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+               width="1200"
+               height="600"
+             />
+           </div>
         )}
 
         <div class="p-8">
-          <header class="mb-6">
-            <h1 class="mb-4 text-4xl font-bold leading-tight text-gray-900">
+          <header class="mb-8 border-b border-gray-100 pb-8">
+            <h1 class="mb-4 text-4xl font-black leading-tight text-gray-900 md:text-5xl">
               {content.title}
             </h1>
             <div class="flex items-center text-gray-500">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mr-2 h-5 w-5 text-green-600">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mr-2 h-6 w-6 text-green-600">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
               </svg>
-              <span class="text-lg">
+              <span class="text-lg font-medium capitalize">
                 {content.eventDate ? formatDate(content.eventDate) : "Fecha por confirmar"}
               </span>
             </div>
           </header>
 
-          <div class="prose prose-lg max-w-none text-gray-700">
-            <p class="whitespace-pre-wrap leading-relaxed">{content.description}</p>
-          </div>
+          <div 
+             class="prose prose-lg max-w-none text-gray-700 prose-headings:font-bold prose-headings:text-gray-900 prose-a:text-green-600 prose-img:rounded-xl"
+             dangerouslySetInnerHTML={content.description || ""}
+          />
+          
+          {/* Render Gallery */}
+          {galleryUrls.length > 0 && (
+             <div class="mt-12 pt-8 border-t border-gray-100">
+               <h3 class="mb-6 text-2xl font-bold text-gray-900">Galería del Evento</h3>
+               <div class="grid grid-cols-2 gap-4 md:grid-cols-3">
+                  {galleryUrls.map((url, i) => (
+                     <a href={url} target="_blank" rel="noopener noreferrer" key={i} class="group block overflow-hidden rounded-xl bg-gray-100 aspect-square">
+                        <img 
+                          src={url} 
+                          alt={`Imagen ${i+1} de la galería`} 
+                          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                          loading="lazy"
+                        />
+                     </a>
+                  ))}
+               </div>
+             </div>
+          )}
         </div>
       </article>
     </div>
@@ -126,13 +163,16 @@ export const head: DocumentHead = ({ resolveValue }) => {
   }
 
   const content = evento as Event;
+  const plainDescription = (content.description || '').replace(/<[^>]+>/g, '').substring(0, 160) + '...';
+
   return {
-    title: `${content.title} | Círculo Italiano`,
+    title: `${content.title} | Círculo Italiano Miramar`,
     meta: [
-      {
-        name: "description",
-        content: content.description?.slice(0, 160) || "",
-      },
+      { name: 'description', content: plainDescription },
+      { property: 'og:title', content: content.title },
+      { property: 'og:description', content: plainDescription },
+      { property: 'og:image', content: content.imageUrl || '' }, // URL de la portada
+      { property: 'og:type', content: 'article' },
     ],
   };
 };

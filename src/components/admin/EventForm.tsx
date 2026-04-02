@@ -1,6 +1,8 @@
 import { component$, useSignal } from "@builder.io/qwik";
 import { Form, Link } from "@builder.io/qwik-city";
 import { ImageUploader } from "~/components/ui/ImageUploader";
+import { WysiwygEditor } from "~/components/admin/WysiwygEditor";
+import { MultiImageUploader } from "~/components/admin/MultiImageUploader";
 
 interface EventFormProps {
   action: any;
@@ -9,6 +11,7 @@ interface EventFormProps {
 
 export const EventForm = component$<EventFormProps>(({ action, event }) => {
   const imageUrlSig = useSignal<string>(event?.imageUrl || "");
+  const galleryUrlsSig = useSignal<string[]>(event?.gallery ? (typeof event.gallery === 'string' ? JSON.parse(event.gallery) : event.gallery) : []);
 
   let defaultEventDate = "";
   if (event?.eventDate) {
@@ -46,85 +49,45 @@ export const EventForm = component$<EventFormProps>(({ action, event }) => {
       )}
 
       <Form action={action} class="space-y-6">
+        <div class="mb-4 text-sm text-gray-500">
+          Los campos marcados con un asterisco rojo (<span class="font-bold text-red-500">*</span>) son obligatorios. Los demás son opcionales.
+        </div>
+
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Título */}
           <div class="md:col-span-2">
-            <label class="mb-2 block text-sm font-semibold text-gray-700">
-              Título del Evento *
+            <label for="title" class="mb-2 block text-sm font-semibold text-gray-700 cursor-pointer">
+              Título del Evento <span class="text-red-500">*</span>
             </label>
             <input
+              id="title"
               type="text"
               name="title"
               required
+              autofocus={!event}
               value={event?.title || ""}
               class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
               placeholder="Ej: Tarde de Pastas"
             />
           </div>
 
-          {/* Lenguaje */}
-          <div>
-            <label class="mb-2 block text-sm font-semibold text-gray-700">
-              Idioma *
-            </label>
-            <select
-              name="language"
-              required
-              class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
-            >
-              <option value="es" selected={event?.language === "es" || !event}>
-                Español (es)
-              </option>
-              <option value="it" selected={event?.language === "it"}>
-                Italiano (it)
-              </option>
-            </select>
-          </div>
-
-          {/* Orden de Visualización */}
-          <div>
-            <label class="mb-2 block text-sm font-semibold text-gray-700">
-              Orden de Visualización
-            </label>
-            <input
-              type="number"
-              name="displayOrder"
-              value={event?.displayOrder ?? 0}
-              class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
-            />
-            <p class="mt-1 text-xs text-gray-400">
-              Número menor aparece primero.
-            </p>
-          </div>
-
-          {/* Fecha / Hora Texto */}
-          <div>
-            <label class="mb-2 block text-sm font-semibold text-gray-700">
-              Fecha/Hora (Texto público) *
-            </label>
-            <input
-              type="text"
-              name="datetime"
-              required
-              value={event?.datetime || ""}
-              class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
-              placeholder="Ej: Sábado 14 de Marzo, 15:30 hs"
-            />
-          </div>
+          <input type="hidden" name="language" value="es" />
 
           {/* Fecha Exacta Timestamp */}
-          <div>
-            <label class="mb-2 block text-sm font-semibold text-gray-700">
-              Fecha Exacta (Interna)
+          <div class="md:col-span-2">
+            <label for="eventDate" class="mb-2 block text-sm font-semibold text-gray-700 cursor-pointer">
+              Fecha y Hora del Evento <span class="text-red-500">*</span>
             </label>
             <input
+              id="eventDate"
               type="datetime-local"
               name="eventDate"
+              required
               value={defaultEventDate}
               class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
             />
             <p class="mt-1 text-xs text-gray-400">
-              Usada para ordenar cronológicamente.
+              Esta fecha se usará para el ordenamiento cronológico automático.
             </p>
           </div>
         </div>
@@ -132,24 +95,31 @@ export const EventForm = component$<EventFormProps>(({ action, event }) => {
         {/* Descripción */}
         <div>
           <label class="mb-2 block text-sm font-semibold text-gray-700">
-            Descripción *
+            Descripción <span class="text-red-500">*</span>
           </label>
-          <textarea
-            name="description"
-            required
-            rows={5}
-            class="w-full resize-y rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
-            placeholder="Escribe los detalles del evento..."
-          >{event?.description || ""}</textarea>
+          <WysiwygEditor name="description" value={event?.description || ""} />
         </div>
 
-        {/* Imagen Uploader */}
+        {/* Imagen Uploader (Portada) */}
         <div class="border-t border-gray-100 pt-6">
           <input type="hidden" name="imageUrl" value={imageUrlSig.value} />
           <ImageUploader
+            label="Portada del Evento"
             currentImageUrl={event?.imageUrl || undefined}
             onUploadCompleted$={(url) => {
               imageUrlSig.value = url;
+            }}
+          />
+        </div>
+
+        {/* Galería Uploader */}
+        <div class="border-t border-gray-100 pt-6">
+          <input type="hidden" name="gallery" value={JSON.stringify(galleryUrlsSig.value)} />
+          <MultiImageUploader
+            label="Galería de Imágenes Adicionales (Máx 6)"
+            currentImageUrls={event?.gallery ? (typeof event.gallery === 'string' ? JSON.parse(event.gallery) : event.gallery) : []}
+            onUploadCompleted$={(urls) => {
+              galleryUrlsSig.value = urls;
             }}
           />
         </div>

@@ -30,7 +30,8 @@ export const useUpdateEventAction = routeAction$(
       title: data.title,
       description: data.description,
       imageUrl: data.imageUrl || null,
-      eventDate: data.datetime || data.eventDate || null,
+      gallery: data.gallery || null,
+      eventDate: data.eventDate,
       language: data.language as "es" | "it",
     }).where(eq(events.id, id));
 
@@ -38,11 +39,10 @@ export const useUpdateEventAction = routeAction$(
   },
   zod$({
     title: z.string().min(1, "El título es obligatorio"),
-    datetime: z.string().min(1, "La fecha textual es obligatoria"),
-    eventDate: z.string().optional(),
+    eventDate: z.string().min(1, "La fecha es obligatoria"),
     description: z.string().min(1, "La descripción es obligatoria"),
     imageUrl: z.string().optional(),
-    displayOrder: z.string().default("0"),
+    gallery: z.string().optional(),
     language: z.enum(["es", "it"]),
   })
 );

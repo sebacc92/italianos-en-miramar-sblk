@@ -2,15 +2,14 @@ import { type RequestHandler } from "@builder.io/qwik-city";
 import { put } from "@vercel/blob";
 
 export const onPost: RequestHandler = async (requestEvent) => {
-  const { sharedMap, request, env, json } = requestEvent;
+  const { request, env, json } = requestEvent;
 
-  // 1. Verificación de sesión de Auth.js inyectada en el SharedMap
-  const session =
-    sharedMap.get("session") || sharedMap.get("authjs.session");
+  // 1. Verificación de sesión basada en la cookie nativa
+  const sessionCookie = requestEvent.cookie.get("admin_session");
 
-  if (!session) {
+  if (!sessionCookie) {
     requestEvent.status(401);
-    throw requestEvent.error(401, "No autorizado. Sesión inválida.");
+    throw requestEvent.error(401, "No autorizado. Sesión de administrador requerida.");
   }
 
   try {
