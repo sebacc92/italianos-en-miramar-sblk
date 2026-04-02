@@ -1,14 +1,12 @@
 import { component$ } from "@builder.io/qwik";
 import { type DocumentHead } from "@builder.io/qwik-city";
-import { useSession } from "~/routes/plugin@auth";
 
 export const head: DocumentHead = {
   title: "Dashboard — Admin | Círculo Italiano",
 };
 
 export default component$(() => {
-  const session = useSession();
-  const userName = session.value?.user?.email?.split("@")[0] || "Administrador";
+  const userName = "Administrador";
 
   return (
     <div class="space-y-6">

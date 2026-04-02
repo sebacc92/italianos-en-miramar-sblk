@@ -14,7 +14,7 @@
     "build.server": "qwik check-client src dist && vite build -c adapters/vercel-edge/vite.config.ts",
     "build.types": "tsc --incremental --noEmit",
     "deploy": "vercel deploy",
-    "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 vite --mode ssr",
+    "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
@@ -24,10 +24,10 @@
     "qwik": "qwik",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
+    "db:seed": "tsx scripts/seed-users.ts",
     "db:studio": "drizzle-kit studio"
   },
   "devDependencies": {
-    "@auth/qwik": "^0.9.1",
     "@builder.io/qwik": "^1.19.0",
     "@builder.io/qwik-city": "latest",
     "@eslint/js": "latest",
@@ -57,7 +57,6 @@
     "typescript-plugin-css-modules": "latest",
     "vercel": "^50.32.3",
     "vite": "7.3.1",
-    "vite-plugin-mkcert": "^1.17.9",
     "vite-tsconfig-paths": "^4.2.1"
   },
   "nx": {},

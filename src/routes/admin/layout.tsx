@@ -1,24 +1,5 @@
 import { component$, Slot } from "@builder.io/qwik";
 import { Link, useLocation } from "@builder.io/qwik-city";
-import type { RequestHandler } from "@builder.io/qwik-city";
-import { useSession } from "~/routes/plugin@auth";
-
-export const onRequest: RequestHandler = async (event) => {
-  const session = event.sharedMap.get("session") || event.sharedMap.get("authjs.session");
-
-  const currentPath = event.url.pathname.replace(/\/$/, "");
-  const isLoginPage = currentPath === "/admin/login";
-
-  // If there's no session and the user is NOT on the login page -> Redirect to login
-  if (!session && !isLoginPage) {
-    throw event.redirect(302, "/admin/login");
-  }
-
-  // If there IS a session and the user tries to go to the login page -> Redirect to dashboard
-  if (session && isLoginPage) {
-    throw event.redirect(302, "/admin");
-  }
-};
 
 const navLinks = [
   {
@@ -89,7 +70,6 @@ const navLinks = [
 
 export default component$(() => {
   const location = useLocation();
-  const session = useSession();
 
   const isLoginPage = location.url.pathname.startsWith("/admin/login");
 
@@ -97,7 +77,7 @@ export default component$(() => {
     return <Slot />;
   }
 
-  const userEmail = session.value?.user?.email || "Admin";
+  const userEmail = "Admin";
 
   return (
     <div class="flex min-h-screen bg-gray-50 font-sans">
@@ -147,28 +127,26 @@ export default component$(() => {
 
         {/* Footer */}
         <div class="border-t border-white/10 px-6 py-4">
-          <form action="/api/auth/signout" method="POST">
-            <button
-              type="submit"
-              class="flex w-full items-center gap-2 text-xs text-gray-400 transition-colors hover:text-red-400"
+          <Link
+            href="/admin/logout"
+            class="flex w-full items-center gap-2 text-xs text-gray-400 transition-colors hover:text-red-400"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width={2}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width={2}
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              Cerrar sesión
-            </button>
-          </form>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            Cerrar sesión
+          </Link>
           <p class="mt-2 text-xs text-gray-600">v2.0 · Círculo Italiano</p>
         </div>
       </aside>

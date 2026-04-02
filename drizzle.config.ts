@@ -6,7 +6,7 @@ if (!process.env.TURSO_DATABASE_URL) {
 }
 
 export default defineConfig({
-  schema: './src/db/schema.ts',
+  schema: './src/db/schema.server.ts',
   out: './drizzle',
   dialect: 'turso',
   dbCredentials: {

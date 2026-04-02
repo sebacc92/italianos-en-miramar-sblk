@@ -1,122 +1,110 @@
 import { component$ } from "@builder.io/qwik";
-import { Form, type DocumentHead } from "@builder.io/qwik-city";
-import { useSignIn } from "~/routes/plugin@auth";
+import { Form, routeAction$, zod$, z, type DocumentHead } from "@builder.io/qwik-city";
+import bcrypt from "bcryptjs";
+import { getDb } from "~/db/client.server";
+import { users } from "~/db/schema.server";
+import { eq } from "drizzle-orm";
 
 export const head: DocumentHead = {
   title: "Login — Admin | Círculo Italiano",
 };
 
+// Acción de login pura
+export const useLoginAction = routeAction$(
+  async (data, { env, cookie, redirect, fail }) => {
+    try {
+      const db = getDb(env);
+      
+      // 1. Buscar usuario
+      const userResult = await db.select().from(users).where(eq(users.username, data.username)).limit(1);
+      const user = userResult[0];
+
+      if (!user) {
+        return fail(401, { message: "Usuario o contraseña incorrectos" });
+      }
+
+      // 2. Validar contraseña
+      const isValid = await bcrypt.compare(data.password, user.passwordHash);
+      if (!isValid) {
+        return fail(401, { message: "Usuario o contraseña incorrectos" });
+      }
+
+      // 3. Actualizar último login (opcional pero recomendado)
+      await db.update(users).set({ lastLogin: new Date() }).where(eq(users.id, user.id));
+
+      // 4. Crear sesión (Cookie HttpOnly) por 7 días
+      cookie.set("admin_session", user.id.toString(), {
+        secure: true,
+        httpOnly: true,
+        path: "/",
+        maxAge: [7, "days"],
+        sameSite: "lax",
+      });
+
+      // 5. Redirigir al panel
+      throw redirect(302, "/admin");
+
+    } catch (error) {
+      if (error instanceof Response) throw error; // Respetar el throw redirect
+      console.error("Error en login:", error);
+      return fail(500, { message: "Error interno del servidor" });
+    }
+  },
+  zod$({
+    username: z.string().min(1, "Usuario requerido"),
+    password: z.string().min(1, "Contraseña requerida"),
+  })
+);
+
 export default component$(() => {
-  const action = useSignIn();
+  const loginAction = useLoginAction();
 
   return (
-    <div class="flex min-h-screen items-center justify-center bg-gray-900 px-4">
-      {/* Background decoration */}
-      <div class="pointer-events-none absolute inset-0 overflow-hidden">
-        <div class="absolute -right-40 -top-40 h-96 w-96 rounded-full bg-green-500/10 blur-3xl" />
-        <div class="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-red-500/10 blur-3xl" />
-      </div>
+    <div class="flex min-h-screen items-center justify-center bg-zinc-950 p-4 font-sans text-white">
+      <div class="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 shadow-2xl backdrop-blur-sm">
+        
+        <div class="mb-8 text-center">
+          <h1 class="text-3xl font-bold tracking-tight text-white">Círculo Italiano</h1>
+          <p class="mt-2 text-sm text-zinc-400">Panel de Administración</p>
+        </div>
 
-      <div class="relative w-full max-w-sm">
-        {/* Logo / Brand */}
-        <div class="mb-10 text-center">
-          <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-green-600 shadow-lg shadow-green-600/30">
-            <span
-              class="text-2xl font-black text-white"
-            >
-              C.I.
-            </span>
+        <Form action={loginAction} class="space-y-5">
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-zinc-300" for="username">Usuario</label>
+            <input 
+              id="username"
+              type="text" 
+              name="username" 
+              required 
+              class="flex h-10 w-full rounded-md border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-[#4CAF50] focus:outline-none focus:ring-1 focus:ring-[#4CAF50]" 
+              placeholder="Ingresa tu usuario" 
+            />
           </div>
-          <h1
-            class="text-2xl font-black text-white"
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-zinc-300" for="password">Contraseña</label>
+            <input 
+              id="password"
+              type="password" 
+              name="password" 
+              required 
+              class="flex h-10 w-full rounded-md border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-[#4CAF50] focus:outline-none focus:ring-1 focus:ring-[#4CAF50]" 
+              placeholder="Ingresa tu contraseña" 
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loginAction.isRunning}
+            class="w-full rounded-md bg-[#4CAF50] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#45a049] focus:outline-none disabled:opacity-50"
           >
-            Panel de Administración
-          </h1>
-          <p class="mt-1 text-sm text-gray-400">
-            Círculo Italiano
-          </p>
-        </div>
-
-        {/* Card */}
-        <div class="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm">
-          <h2 class="mb-6 text-base font-semibold text-white">
-            Iniciar sesión
-          </h2>
-
-          <Form action={action} class="space-y-5">
-            <input type="hidden" name="providerId" value="credentials" />
-            <input type="hidden" name="options.callbackUrl" value="/admin" />
-
-            <div>
-              <label
-                for="email"
-                class="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-400"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autocomplete="email"
-                required
-                class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-gray-500 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="admin@italianos.com"
-              />
-            </div>
-
-            <div>
-              <label
-                for="password"
-                class="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-400"
-              >
-                Contraseña
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autocomplete="current-password"
-                required
-                class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-gray-500 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="••••••••"
-              />
-            </div>
-
-            {/* Auth.js exposes error via action.value url redirects, but also on the action if it fails in case of misconfiguration. 
-                For credentials error display, we can check search params later if we want. */}
-            {action.value?.failed && (
-              <div class="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/15 px-4 py-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 shrink-0 text-red-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width={2}
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-                <p class="text-sm text-red-400">Credenciales incorrectas.</p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              class="w-full rounded-lg bg-green-600 py-3 text-sm font-black uppercase tracking-widest text-white shadow-lg shadow-green-600/20 transition-all duration-200 hover:bg-green-500 disabled:opacity-60"
-            >
-              {action.isRunning ? "Verificando..." : "Ingresar"}
-            </button>
-          </Form>
-        </div>
-
-        <p class="mt-6 text-center text-xs text-gray-500">
-          © {new Date().getFullYear()} Círculo Italiano
-        </p>
+            {loginAction.isRunning ? "Ingresando..." : "Ingresar"}
+          </button>
+          
+          {loginAction.value?.message && (
+             <p class="text-sm text-red-500 text-center mt-2">{loginAction.value.message}</p>
+          )}
+        </Form>
       </div>
     </div>
   );

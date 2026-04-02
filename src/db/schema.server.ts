@@ -7,7 +7,7 @@ import { sql, type InferSelectModel } from "drizzle-orm";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  email: text("email").notNull().unique(),
+  username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   lastLogin: integer("last_login", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).default(

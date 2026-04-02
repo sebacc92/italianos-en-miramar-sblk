@@ -9,7 +9,6 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import pkg from "./package.json";
 import tailwindcss from "@tailwindcss/vite";
 import { i18nPlugin } from "compiled-i18n/vite";
-import mkcert from 'vite-plugin-mkcert'
 
 type PkgDep = Record<string, string>;
 const { dependencies = {}, devDependencies = {} } = pkg as any as {
@@ -33,7 +32,6 @@ export default defineConfig(({ command, mode }): UserConfig => {
           }
         }
       },
-      command === "serve" ? mkcert() : undefined,
       qwikCity(),
       qwikVite(),
       tsconfigPaths({ root: "." }),
