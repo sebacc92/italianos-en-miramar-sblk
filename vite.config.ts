@@ -24,14 +24,6 @@ errorOnDuplicatesPkgDeps(devDependencies, dependencies);
 export default defineConfig(({ command, mode }): UserConfig => {
   return {
     plugins: [
-      {
-        name: 'trace-sqlite',
-        resolveId(source, importer) {
-          if (source.includes('@libsql') || source.includes('drizzle-orm/libsql')) {
-            console.log(`\n\n🎯 SQLITE LEAK: ${source} \n   IMPORTED BY: ${importer}\n\n`);
-          }
-        }
-      },
       qwikCity(),
       qwikVite(),
       tsconfigPaths({ root: "." }),
