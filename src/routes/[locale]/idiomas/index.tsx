@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useSignal } from "@builder.io/qwik";
 import {
   type DocumentHead,
   routeLoader$,
@@ -11,7 +11,7 @@ import { InscriptionForm } from "~/components/idiomas/InscriptionForm";
 import { Button } from "~/components/ui/Button";
 import { getDb } from "~/db/client.server";
 import { courses } from "~/db/schema.server";
-import { eq, desc } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 // Este utils/turso sigue usándose para la InscriptionForm asumiendo que es legacy/otra app config,
 // Si "tursoClient" usa env, asegurémonos que funciona
 import { tursoClient } from "~/utils/turso.server";
@@ -24,7 +24,7 @@ export const useCourses = routeLoader$(async ({ params, env }) => {
     const res = await db
       .select()
       .from(courses)
-      .orderBy(desc(courses.displayOrder));
+      .orderBy(asc(courses.displayOrder));
 
     return res;
   } catch (error) {
@@ -68,13 +68,15 @@ export const useSubmitInscription = routeAction$(
 export default component$(() => {
   const action = useSubmitInscription();
   const cursos = useCourses();
+  const selectedCourseId = useSignal("");
+  const nameInputRef = useSignal<HTMLInputElement>();
 
   return (
     <div class="flex min-h-screen flex-col bg-gray-50">
       {/* Hero Section */}
-      <section class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-green-900 text-white">
-        <div class="absolute inset-0 bg-[url('/bg-pattern.svg')] opacity-10"></div>
-        <div class="absolute inset-0 bg-black/40"></div>
+      <section class="relative overflow-hidden text-white">
+        <div class="absolute inset-0 bg-[url('/images/exterior_institucion.webp')] bg-cover bg-center"></div>
+        <div class="absolute inset-0 bg-black/50"></div>
         <div class="relative z-10 container mx-auto px-4 py-24 text-center md:py-32">
           <span class="animate-in fade-in slide-in-from-bottom-4 mb-6 inline-block rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm font-semibold tracking-wider backdrop-blur-sm duration-700">
             INSCRIPCIONES ABIERTAS
@@ -128,7 +130,11 @@ export default component$(() => {
           </p>
         </div>
 
-        <CourseList courses={cursos.value} />
+        <CourseList
+          courses={cursos.value}
+          selectedCourseId={selectedCourseId}
+          nameInputRef={nameInputRef}
+        />
       </section>
 
       {/* Inscription Form Section */}
@@ -137,7 +143,12 @@ export default component$(() => {
         <div class="absolute inset-x-0 top-0 h-40 bg-gray-50"></div>
 
         <div class="relative z-10 container mx-auto px-4">
-          <InscriptionForm action={action} courses={cursos.value} />
+          <InscriptionForm
+            action={action}
+            courses={cursos.value}
+            selectedCourseId={selectedCourseId}
+            nameInputRef={nameInputRef}
+          />
         </div>
       </section>
     </div>

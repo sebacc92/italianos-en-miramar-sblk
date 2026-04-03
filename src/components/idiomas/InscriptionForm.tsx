@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, type Signal } from "@builder.io/qwik";
 import { Form, type ActionStore } from "@builder.io/qwik-city";
 import { Button } from "~/components/ui/Button";
 import { Input } from "~/components/ui/Input";
@@ -9,10 +9,12 @@ import { LuSend, LuCheckCircle } from "@qwikest/icons/lucide";
 interface InscriptionFormProps {
   action: ActionStore<any, any>;
   courses: Array<{ id: number; nombre_curso: string; horarios: string }>;
+  selectedCourseId?: Signal<string>;
+  nameInputRef?: Signal<HTMLInputElement | undefined>;
 }
 
 export const InscriptionForm = component$<InscriptionFormProps>(
-  ({ action, courses }) => {
+  ({ action, courses, selectedCourseId, nameInputRef }) => {
     // Opciones para el select basadas en los cursos disponibles
     const courseOptions = courses.map((c) => ({
       label: `${c.nombre_curso} (${c.horarios || 'Consultar horario'})`,
@@ -60,7 +62,7 @@ export const InscriptionForm = component$<InscriptionFormProps>(
               <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div class="space-y-2">
                   <Label for="name">Nombre y Apellido</Label>
-                  <Input name="name" id="name" placeholder="Ej: Juan Pérez" />
+                  <Input name="name" id="name" placeholder="Ej: Juan Pérez" ref={nameInputRef} />
                   {action.value?.fieldErrors?.name && (
                     <p class="mt-1 text-xs text-red-600">
                       {action.value.fieldErrors.name}
@@ -100,7 +102,7 @@ export const InscriptionForm = component$<InscriptionFormProps>(
 
               <div class="space-y-2">
                 <Label for="course">Curso de interés</Label>
-                <Select name="course" id="course" options={courseOptions} />
+                <Select name="course" id="course" options={courseOptions} bind:value={selectedCourseId} />
                 {action.value?.fieldErrors?.course && (
                   <p class="mt-1 text-xs text-red-600">
                     {action.value.fieldErrors.course}

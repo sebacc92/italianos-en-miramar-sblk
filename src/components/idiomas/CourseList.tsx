@@ -2,6 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import { Card } from "~/components/ui/card/card";
 import { Button } from "~/components/ui/Button";
 import { LuArrowRight } from "@qwikest/icons/lucide";
+import { type Signal } from "@builder.io/qwik";
 
 interface CourseListProps {
   courses: Array<{
@@ -13,9 +14,11 @@ interface CourseListProps {
     precio_no_socio: number;
     precio_inscripcion: number;
   }>;
+  selectedCourseId?: Signal<string>;
+  nameInputRef?: Signal<HTMLInputElement | undefined>;
 }
 
-export const CourseList = component$<CourseListProps>(({ courses }) => {
+export const CourseList = component$<CourseListProps>(({ courses, selectedCourseId, nameInputRef }) => {
   if (!courses || courses.length === 0) {
     return (
       <div class="py-12 text-center text-gray-500">
@@ -59,18 +62,21 @@ export const CourseList = component$<CourseListProps>(({ courses }) => {
                 </div>
                 
                 {/* Precios */}
-                <div class="mt-4 rounded-xl bg-gray-50 p-4">
-                  <div class="flex justify-between items-center text-sm border-b border-gray-200 pb-2 mb-2">
-                    <span class="text-gray-500">Socios</span>
-                    <span class="font-bold text-green-700">${course.precio_socio}</span>
+                <div class="mt-4 rounded-xl bg-gray-50 p-4 space-y-3">
+                  <div class="flex flex-col border-b border-gray-200 pb-3 mb-2">
+                    <span class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Valores mensuales</span>
+                    <div class="flex justify-between items-center bg-green-100 text-green-800 px-3 py-1.5 rounded-lg font-medium text-sm mb-2">
+                      <span>Socios</span>
+                      <span class="font-bold">${course.precio_socio}</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-zinc-100 text-zinc-800 px-3 py-1.5 rounded-lg font-medium text-sm">
+                      <span>No Socios</span>
+                      <span class="font-bold">${course.precio_no_socio}</span>
+                    </div>
                   </div>
-                  <div class="flex justify-between items-center text-sm border-b border-gray-200 pb-2 mb-2">
-                    <span class="text-gray-500">No Socios</span>
-                    <span class="font-bold text-gray-900">${course.precio_no_socio}</span>
-                  </div>
-                  <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-500">Inscripción</span>
-                    <span class="font-semibold text-gray-700">${course.precio_inscripcion}</span>
+                  <div class="flex justify-between items-center text-sm px-1">
+                    <span class="text-gray-500 font-medium">Inscripción anual</span>
+                    <span class="font-bold text-gray-700">${course.precio_inscripcion}</span>
                   </div>
                 </div>
               </div>
@@ -80,9 +86,18 @@ export const CourseList = component$<CourseListProps>(({ courses }) => {
                 variant="outline"
                 fullWidth
                 onClick$={() => {
+                  if (selectedCourseId) {
+                    selectedCourseId.value = String(course.id);
+                  }
                   document
                     .getElementById("inscription-form")
                     ?.scrollIntoView({ behavior: "smooth" });
+                  
+                  if (nameInputRef?.value) {
+                    setTimeout(() => {
+                      nameInputRef.value?.focus();
+                    }, 100);
+                  }
                 }}
               >
                 Inscribirse <LuArrowRight class="ml-2 h-4 w-4" />
