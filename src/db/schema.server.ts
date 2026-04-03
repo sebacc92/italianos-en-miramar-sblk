@@ -9,8 +9,8 @@ export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
-  role: text("role", { enum: ["ADMIN", "DANZAS", "NUTRICION", "ARTE"] }).notNull().default("ADMIN"),
-  lastLogin: integer("last_login", { mode: "timestamp" }),
+  role: text("role", { enum: ["SUPERADMIN", "ADMIN", "DANZAS", "NUTRICION", "ARTE"] }).notNull().default("ADMIN"),
+  ultimo_acceso: text("ultimo_acceso"),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`
   ),

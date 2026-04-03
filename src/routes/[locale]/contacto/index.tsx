@@ -14,8 +14,9 @@ import {
   LuCheckCircle,
   LuAlertCircle,
 } from "@qwikest/icons/lucide";
-import { Button } from "~/components/ui/Button";
 import { generateI18nPaths } from "~/utils/i18n-utils";
+import { PageHero } from "~/components/ui/PageHero";
+import { Button } from "~/components/ui/Button";
 
 // Declaración para TypeScript de window.turnstile
 declare global {
@@ -149,16 +150,10 @@ export default component$(() => {
   return (
     <div class="flex min-h-screen flex-col bg-gray-50">
       {/* Hero Section */}
-      <section class="bg-gradient-to-r from-green-600/80 via-white to-red-600/80 py-20 md:py-24">
-        <div class="container mx-auto px-4">
-          <div class="text-center">
-            <h1 class="mb-4 text-4xl font-bold text-gray-800 md:text-5xl">{_`Contacto`}</h1>
-            <p class="mx-auto max-w-2xl text-lg text-gray-600 md:text-xl">
-              {_`Estamos aquí para ayudarte`}
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        title={_`Contacto`}
+        description={_`Estamos aquí para ayudarte`}
+      />
 
       {/* Main Content */}
       <main class="container mx-auto px-4 py-16">

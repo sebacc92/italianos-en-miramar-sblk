@@ -3,7 +3,7 @@ import { type DocumentHead, routeLoader$, routeAction$, z, zod$, Form } from "@b
 import { getDb } from "~/db/client.server";
 import { nutricionProfesionales } from "~/db/schema.server";
 import { eq } from "drizzle-orm";
-import { LuPlus, LuTrash2, LuApple } from "@qwikest/icons/lucide";
+import { LuPlus, LuTrash2, LuApple, LuPencil } from "@qwikest/icons/lucide";
 import { Button } from "~/components/ui/Button";
 import { Input } from "~/components/ui/Input";
 
@@ -138,7 +138,15 @@ export default component$(() => {
                     <td class="px-4 py-3">{prof.dia_semana} ({prof.hora_inicio} a {prof.hora_fin})</td>
                     <td class="px-4 py-3 truncate max-w-xs">{prof.descripcion_servicios}</td>
                     <td class="px-4 py-3 text-right">
-                      <Form
+                      <div class="flex items-center justify-end gap-2">
+                        <a
+                          href={`/admin/nutricion/${prof.id}/edit`}
+                          class="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-green-600"
+                          title="Editar profesional"
+                        >
+                          <LuPencil class="h-4 w-4" />
+                        </a>
+                        <Form
                         action={deleteAction}
                         onSubmit$={(e: Event) => {
                           if (!window.confirm("¿Seguro que deseas eliminar a este profesional?")) e.preventDefault();
@@ -149,6 +157,7 @@ export default component$(() => {
                           <LuTrash2 class="h-4 w-4" />
                         </button>
                       </Form>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -22,6 +22,7 @@ import {
 import { tursoClient } from "~/utils/turso.server";
 import { _ } from "compiled-i18n";
 import { generateI18nPaths } from "~/utils/i18n-utils";
+import { PageHero } from "~/components/ui/PageHero";
 
 export const useSubmitMembership = routeAction$(
   async (data, requestEvent) => {
@@ -125,17 +126,10 @@ export default component$(() => {
   return (
     <div class="flex min-h-screen flex-col bg-gray-50">
       {/* Hero Section */}
-      <section class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-green-900 text-white">
-        <div class="absolute inset-0 bg-black/40"></div>
-        <div class="relative z-10 container mx-auto px-4 py-24 text-center md:py-32">
-          <h1 class="animate-in fade-in slide-in-from-bottom-6 mb-6 text-4xl leading-tight font-bold duration-700 md:text-6xl">
-            {_`joinForm.hero.title`}
-          </h1>
-          <p class="animate-in fade-in slide-in-from-bottom-8 mx-auto mb-10 max-w-2xl text-xl leading-relaxed text-gray-200 delay-200 duration-700 md:text-2xl">
-            {_`joinForm.hero.subtitle`}
-          </p>
-        </div>
-      </section>
+      <PageHero
+        title={_`joinForm.hero.title`}
+        description={_`joinForm.hero.subtitle`}
+      />
 
       {/* Form Section */}
       <section class="container mx-auto max-w-4xl px-4 py-20">

@@ -9,6 +9,7 @@ import { events } from "~/db/schema.server";
 import { eq, desc, sql } from "drizzle-orm";
 import { stripHtml } from "~/utils/stringUtils";
 import { EventCard } from "~/components/events/EventCard";
+import { PageHero } from "~/components/ui/PageHero";
 
 export const useEventos = routeLoader$(async ({ params, env, url }) => {
   const db = getDb(env);
@@ -56,16 +57,10 @@ export default component$(() => {
     <div class="flex min-h-screen flex-col bg-gray-50">
       <main class="flex-1">
         {/* Hero Section */}
-        <section class="bg-linear-to-br from-green-700 via-green-600 to-green-800 py-16 text-white">
-          <div class="container mx-auto px-4 text-center">
-            <h1 class="mb-4 text-4xl font-bold md:text-5xl">
-              {_`events.title`}
-            </h1>
-            <p class="mx-auto max-w-2xl text-xl text-green-100">
-              {_`events.subtitle`}
-            </p>
-          </div>
-        </section>
+        <PageHero
+          title={_`events.title`}
+          description={_`events.subtitle`}
+        />
 
         {/* Events Grid */}
         <section class="py-16">

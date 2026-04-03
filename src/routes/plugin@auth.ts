@@ -41,11 +41,15 @@ export const onRequest: RequestHandler = async ({ url, cookie, redirect, sharedM
     }
 
     // Role verification logic
-    // Dashboard (/admin or /admin/) is allowed for everyone so they see the welcome
     const path = url.pathname;
     const isDashboard = path === '/admin' || path === '/admin/';
     
-    if (!isDashboard && user.role !== 'ADMIN') {
+    if (user.role === 'SUPERADMIN') {
+      // Access granted everywhere
+    } else if (path.startsWith('/admin/cleverisma')) {
+      // Access denied for non-superadmins
+      sharedMap.set('access_denied', true);
+    } else if (!isDashboard && user.role !== 'ADMIN') {
        // We can map prefixes to roles
        const permissions: Record<string, string> = {
          'DANZAS': '/admin/danzas',
@@ -55,7 +59,7 @@ export const onRequest: RequestHandler = async ({ url, cookie, redirect, sharedM
 
        const allowedPrefix = permissions[user.role as string];
        if (!allowedPrefix || !path.startsWith(allowedPrefix)) {
-          // Access Denied! We don't redirect. We pass an error state to be handled by layout/page
+          // Access Denied!
           sharedMap.set('access_denied', true);
        }
     }

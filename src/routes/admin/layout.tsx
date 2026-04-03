@@ -10,7 +10,8 @@ import {
   LuMusic,
   LuApple,
   LuPalette,
-  LuLogOut
+  LuLogOut,
+  LuTerminal
 } from "@qwikest/icons/lucide";
 
 const navLinks = [
@@ -141,17 +142,34 @@ export default component$(() => {
               </Link>
             );
           })}
+          
+          {user?.role === "SUPERADMIN" && (
+            <div class="pt-4 mt-4 border-t border-white/10">
+              <Link
+                href="/admin/cleverisma"
+                class={[
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                  location.url.pathname.startsWith("/admin/cleverisma")
+                    ? "bg-purple-600 text-white shadow-lg shadow-purple-900/20"
+                    : "text-purple-400 hover:bg-white/10 hover:text-purple-300",
+                ].join(" ")}
+              >
+                <LuTerminal class="h-5 w-5" />
+                Cleverisma Core
+              </Link>
+            </div>
+          )}
         </nav>
 
         {/* Footer */}
         <div class="border-t border-white/10 px-6 py-4">
-          <Link
+          <a
             href="/admin/logout"
             class="flex w-full items-center gap-2 text-xs text-gray-400 transition-colors hover:text-red-400"
           >
             <LuLogOut class="h-4 w-4" />
             Cerrar sesión
-          </Link>
+          </a>
           <p class="mt-2 text-xs text-gray-600">v2.0 · Círculo Italiano</p>
         </div>
       </aside>

@@ -1,5 +1,9 @@
 import { component$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import { routeLoader$ } from "@builder.io/qwik-city";
+import { getDb } from "~/db/client.server";
+import { autoridades } from "~/db/schema.server";
+import { asc } from "drizzle-orm";
 import { _ } from "compiled-i18n";
 import Img1 from "~/media/story1.jpeg?jsx";
 import Img2 from "~/media/story2.jpeg?jsx";
@@ -8,20 +12,25 @@ import Img4 from "~/media/story4.jpeg?jsx";
 import Img5 from "~/media/story5.jpeg?jsx";
 import Img6 from "~/media/story6.jpeg?jsx";
 import { generateI18nPaths } from "~/utils/i18n-utils";
+import { PageHero } from "~/components/ui/PageHero";
+
+export const useAutoridades = routeLoader$(async ({ env }) => {
+  const db = getDb(env);
+  const result = await db.select().from(autoridades).orderBy(asc(autoridades.cargo));
+  return result;
+});
 
 export default component$(() => {
+  const autoridadesList = useAutoridades();
+  
   return (
     <div class="flex min-h-screen flex-col bg-gray-50">
       <main class="flex-1">
         {/* Hero Section */}
-        <section class="bg-gradient-to-r from-green-600/80 via-white to-red-600/80 py-20 md:py-24">
-          <div class="container mx-auto px-4">
-            <div class="text-center">
-              <h1 class="mb-4 text-4xl font-bold text-gray-800 md:text-5xl">{_`about.title`}</h1>
-              <p class="mx-auto mb-6 max-w-2xl text-lg text-gray-600 md:text-xl">{_`about.subtitle`}</p>
-            </div>
-          </div>
-        </section>
+        <PageHero
+          title={_`about.title`}
+          description={_`about.subtitle`}
+        />
 
         {/* Video Section */}
         <section class="py-16">
@@ -258,6 +267,35 @@ export default component$(() => {
                 <p class="text-gray-600">{_`about.valSolidarityDesc`}</p>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Autoridades Section */}
+        <section class="bg-gray-50 py-16 border-t border-gray-200 border-b">
+          <div class="container mx-auto px-4">
+            <div class="mb-12 text-center">
+              <h2 class="mb-4 text-3xl font-bold text-gray-800">Comisión Directiva</h2>
+              <div class="mx-auto h-1 w-20 rounded bg-green-600"></div>
+              <p class="mx-auto mt-6 max-w-2xl text-gray-600">
+                Conocé a las autoridades que dirigen y organizan nuestras actividades diarias.
+              </p>
+            </div>
+            
+            {autoridadesList.value.length > 0 ? (
+              <div class="mx-auto grid max-w-5xl gap-6 sm:grid-cols-2 md:grid-cols-3">
+                {autoridadesList.value.map((auth) => (
+                  <div key={auth.id} class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-green-200 flex flex-col items-center text-center">
+                    <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-50 text-green-700 shadow-inner">
+                      <span class="text-2xl font-bold">{auth.nombre.charAt(0)}</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900">{auth.nombre}</h3>
+                    <p class="mt-1 font-bold text-green-600 uppercase tracking-widest text-xs">{auth.cargo}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+                <p class="text-center text-gray-500 italic">La comisión directiva está siendo actualizada.</p>
+            )}
           </div>
         </section>
 

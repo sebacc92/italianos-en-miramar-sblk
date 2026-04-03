@@ -4,7 +4,8 @@ import { getDb } from "~/db/client.server";
 import { nutricionProfesionales } from "~/db/schema.server";
 import { TurnoForm } from "~/components/nutricion/TurnoForm";
 import { tursoClient } from "~/utils/turso.server";
-import { LuApple, LuClock, LuCheckCircle2 } from "@qwikest/icons/lucide";
+import { LuClock, LuCheckCircle2 } from "@qwikest/icons/lucide";
+import { PageHero } from "~/components/ui/PageHero";
 
 export const useNutricionData = routeLoader$(async (requestEvent) => {
   const db = getDb(requestEvent.env);
@@ -56,20 +57,28 @@ export default component$(() => {
   const data = useNutricionData();
   const action = useSubmitTurnoAction();
 
+  const groupedProfesionales = data.value.reduce((acc, prof) => {
+    if (!acc[prof.nombre]) {
+      acc[prof.nombre] = {
+         id: prof.id,
+         nombre: prof.nombre,
+         descripcion_servicios: prof.descripcion_servicios,
+         horarios: []
+      };
+    }
+    acc[prof.nombre].horarios.push(`${prof.dia_semana} (${prof.hora_inicio} a ${prof.hora_fin}hs)`);
+    return acc;
+  }, {} as Record<string, { id: string, nombre: string, descripcion_servicios: string, horarios: string[] }>);
+
+  const profesionalesArray = Object.values(groupedProfesionales);
+
   return (
     <div class="flex min-h-screen flex-col bg-green-50/30">
       {/* Hero */}
-      <section class="bg-linear-to-br from-green-800 via-green-700 to-emerald-700 py-24 text-white shadow-inner">
-        <div class="container mx-auto px-4 text-center">
-          <div class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-lg transition-transform hover:scale-105">
-            <LuApple class="h-12 w-12 text-white" />
-          </div>
-          <h1 class="mb-5 text-4xl font-extrabold md:text-6xl tracking-tight">Gabinete de Nutrición</h1>
-          <p class="mx-auto max-w-2xl text-xl text-green-100 leading-relaxed font-medium">
-            Profesionales al servicio de tu bienestar y rendimiento físico. Conseguí tus objetivos con asesoramiento personalizado.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        title="Gabinete de Nutrición"
+        description="Profesionales al servicio de tu bienestar y rendimiento físico. Conseguí tus objetivos con asesoramiento personalizado."
+      />
 
       {/* Profesionales */}
       <section class="py-20">
@@ -85,22 +94,20 @@ export default component$(() => {
             </div>
           ) : (
             <div class="grid gap-8 md:grid-cols-2 lg:mx-20">
-              {data.value.map((prof) => (
+              {profesionalesArray.map((prof) => (
                 <div key={prof.id} class="group relative overflow-hidden rounded-3xl bg-white p-8 shadow-md border border-green-100 transition-all hover:shadow-xl hover:-translate-y-1">
-                  <h3 class="mb-3 text-2xl font-bold text-green-900">{prof.nombre}</h3>
-                  <div class="mb-5 flex items-center text-green-700 font-semibold bg-green-50 w-fit px-3 py-1.5 rounded-lg border border-green-200">
-                    <LuClock class="mr-2 h-4 w-4" />
-                    <span>{prof.dia_semana} ({prof.hora_inicio} a {prof.hora_fin}hs)</span>
-                  </div>
+                  <h3 class="mb-4 text-2xl font-bold text-green-900">{prof.nombre}</h3>
                   
-                  <div class="space-y-2 text-gray-600">
-                    {prof.descripcion_servicios.split('\n').filter(s => s.trim().length > 0).map((s, i) => (
-                      <div key={i} class="flex items-start">
-                        <LuCheckCircle2 class="mr-2 mt-1 h-4 w-4 text-green-500 shrink-0" />
-                        <span>{s}</span>
+                  <div class="mb-5 flex flex-wrap gap-2">
+                    {prof.horarios.map((horario, i) => (
+                      <div key={i} class="flex items-center text-green-800 font-semibold bg-green-50 px-3 py-1.5 rounded-lg border border-green-200 text-sm">
+                        <LuClock class="mr-2 h-4 w-4" />
+                        <span>{horario}</span>
                       </div>
                     ))}
                   </div>
+                  
+                  <div class="prose prose-sm prose-green max-w-none text-gray-600" dangerouslySetInnerHTML={prof.descripcion_servicios} />
                 </div>
               ))}
             </div>
@@ -109,11 +116,13 @@ export default component$(() => {
       </section>
 
       {/* Solicitar Turno */}
-      {data.value.length > 0 && (
+      {profesionalesArray.length > 0 && (
         <section class="relative py-20 bg-white border-t border-green-100">
           <div class="absolute inset-x-0 top-0 h-40 bg-green-50/30"></div>
           <div class="relative z-10 container mx-auto px-4">
-            <TurnoForm action={action} profesionales={data.value as any} />
+            {/* Usamos data.value para el TurnoForm o profesionalesArray. data.value tiene las IDS reales si las necesita.
+                Pero profId era data.course. En profesionalesArray tenemos ids y nombres agrupados. */}
+            <TurnoForm action={action} profesionales={profesionalesArray as any} />
           </div>
         </section>
       )}

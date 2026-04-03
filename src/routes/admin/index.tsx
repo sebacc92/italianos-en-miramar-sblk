@@ -1,8 +1,13 @@
 import { component$ } from "@builder.io/qwik";
 import { type DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
 import { getDb } from "~/db/client.server";
-import { events, courses, danzasCronograma, arteCursos, nutricionProfesionales, autoridades } from "~/db/schema.server";
-import { count } from "drizzle-orm";
+import { users, events, courses, danzasCronograma, arteCursos, nutricionProfesionales, autoridades } from "~/db/schema.server";
+import { count, eq } from "drizzle-orm";
+import { routeAction$, zod$, z, Form } from "@builder.io/qwik-city";
+import * as bcrypt from "bcryptjs";
+import { Button } from "~/components/ui/Button";
+import { Input } from "~/components/ui/Input";
+import { Label } from "~/components/ui/Label";
 
 export const head: DocumentHead = {
   title: "Dashboard — Admin | Círculo Italiano",
@@ -28,6 +33,7 @@ export const useDashboardStats = routeLoader$(async (requestEvent) => {
   ]);
 
   return {
+    user: requestEvent.sharedMap.get('user') || { username: 'Administrador' },
     eventos: eventosCount[0].value,
     cursos: cursosCount[0].value,
     danzas: danzasCount[0].value,
@@ -37,9 +43,50 @@ export const useDashboardStats = routeLoader$(async (requestEvent) => {
   };
 });
 
+export const useUpdatePassword = routeAction$(
+  async (data, requestEvent) => {
+    const user = requestEvent.sharedMap.get('user');
+    if (!user || typeof user.id !== 'number') {
+      return { success: false, message: "No autorizado" };
+    }
+
+    if (data.password_nueva !== data.confirmar_password_nueva) {
+      return { success: false, message: "Las contraseñas nuevas no coinciden" };
+    }
+
+    const db = getDb(requestEvent.env);
+    
+    // Obtener hash actual
+    const [dbUser] = await db
+      .select({ passwordHash: users.passwordHash })
+      .from(users)
+      .where(eq(users.id, user.id));
+      
+    if (!dbUser) return { success: false, message: "Usuario no encontrado" };
+    
+    // Verificar original
+    const isValid = await bcrypt.compare(data.password_actual, dbUser.passwordHash);
+    if (!isValid) return { success: false, message: "La contraseña actual es incorrecta" };
+    
+    // Guardar nuevo
+    const salt = await bcrypt.genSalt(10);
+    const newHash = await bcrypt.hash(data.password_nueva, salt);
+    
+    await db.update(users).set({ passwordHash: newHash }).where(eq(users.id, user.id));
+    
+    return { success: true, message: "Contraseña actualizada con éxito. La próxima vez que inicies sesión usa la nueva clave." };
+  },
+  zod$({
+    password_actual: z.string().min(1, "Debes ingresar tu contraseña actual"),
+    password_nueva: z.string().min(6, "La nueva contraseña debe tener al menos 6 caracteres"),
+    confirmar_password_nueva: z.string().min(6, "La confirmación no coincide"),
+  })
+);
+
 export default component$(() => {
   const stats = useDashboardStats();
-  const userName = "Administrador";
+  const pwdAction = useUpdatePassword();
+  const userName = stats.value.user.username;
 
   return (
     <div class="space-y-6">
@@ -89,6 +136,46 @@ export default component$(() => {
             Talleres de Arte
           </span>
         </div>
+      </div>
+
+      <div class="mt-8 rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Mi Perfil: Seguridad</h2>
+        
+        <Form action={pwdAction} class="max-w-md space-y-4">
+          {pwdAction.value && (
+            <div class={`rounded-xl p-4 text-sm font-medium shadow-sm mb-4 border ${pwdAction.value.success ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-800'}`}>
+              {String(pwdAction.value.message)}
+            </div>
+          )}
+
+          <div class="space-y-2">
+            <Label for="password_actual">Contraseña Actual</Label>
+            <Input name="password_actual" id="password_actual" type="password" placeholder="Tu contraseña actual" />
+            {pwdAction.value?.fieldErrors?.password_actual && (
+              <p class="mt-1 text-xs text-red-600">{pwdAction.value.fieldErrors.password_actual}</p>
+            )}
+          </div>
+          <div class="space-y-2">
+            <Label for="password_nueva">Nueva Contraseña</Label>
+            <Input name="password_nueva" id="password_nueva" type="password" placeholder="Mínimo 6 caracteres" />
+            {pwdAction.value?.fieldErrors?.password_nueva && (
+              <p class="mt-1 text-xs text-red-600">{pwdAction.value.fieldErrors.password_nueva}</p>
+            )}
+          </div>
+          <div class="space-y-2">
+            <Label for="confirmar_password_nueva">Confirmar Nueva Contraseña</Label>
+            <Input name="confirmar_password_nueva" id="confirmar_password_nueva" type="password" placeholder="Escribe tu nueva contraseña de nuevo" />
+            {pwdAction.value?.fieldErrors?.confirmar_password_nueva && (
+              <p class="mt-1 text-xs text-red-600">{pwdAction.value.fieldErrors.confirmar_password_nueva}</p>
+            )}
+          </div>
+          
+          <div class="pt-4">
+            <Button type="submit" disabled={pwdAction.isRunning}>
+              {pwdAction.isRunning ? "Actualizando..." : "Actualizar Contraseña"}
+            </Button>
+          </div>
+        </Form>
       </div>
     </div>
   );

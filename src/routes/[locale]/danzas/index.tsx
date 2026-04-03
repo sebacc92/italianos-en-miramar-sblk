@@ -4,6 +4,7 @@ import { getDb } from "~/db/client.server";
 import { danzasCronograma, danzasGaleria, danzasConfig } from "~/db/schema.server";
 import { desc } from "drizzle-orm";
 import { LuMusic, LuDownload, LuInstagram, LuPhone, LuMapPin } from "@qwikest/icons/lucide";
+import { PageHero } from "~/components/ui/PageHero";
 
 export const useDanzasData = routeLoader$(async (requestEvent) => {
   const db = getDb(requestEvent.env);
@@ -27,17 +28,10 @@ export default component$(() => {
   return (
     <div class="flex min-h-screen flex-col bg-gray-50">
       {/* Hero */}
-      <section class="bg-linear-to-br from-indigo-900 via-purple-900 to-indigo-800 py-20 text-white">
-        <div class="container mx-auto px-4 text-center">
-          <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm">
-            <LuMusic class="h-10 w-10 text-indigo-200" />
-          </div>
-          <h1 class="mb-4 text-4xl font-bold md:text-5xl">Ritmos en Acción</h1>
-          <p class="mx-auto max-w-2xl text-xl text-indigo-200">
-            Escuela de danzas del Círculo Italiano. Descubrí tu pasión por el baile con nuestros excelentes profesores.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        title="Ritmos en Acción"
+        description="Escuela de danzas del Círculo Italiano. Descubrí tu pasión por el baile con nuestros excelentes profesores."
+      />
 
       {/* Schedule Grid */}
       <section class="py-16">

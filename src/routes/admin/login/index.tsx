@@ -29,8 +29,8 @@ export const useLoginAction = routeAction$(
         return fail(401, { message: "Usuario o contraseña incorrectos" });
       }
 
-      // 3. Actualizar último login (opcional pero recomendado)
-      await db.update(users).set({ lastLogin: new Date() }).where(eq(users.id, user.id));
+      // 3. Actualizar último login
+      await db.update(users).set({ ultimo_acceso: new Date().toISOString() }).where(eq(users.id, user.id));
 
       // 4. Crear sesión (Cookie HttpOnly) por 7 días
       cookie.set("admin_session", user.id.toString(), {

@@ -19,14 +19,19 @@ const run = async () => {
 
   const hash = bcrypt.hashSync('Miramar2026*', 10);
 
-  const usersToInsert = [
-    { username: 'seba', passwordHash: hash },
-    { username: 'luz', passwordHash: hash },
-    { username: 'laura', passwordHash: hash },
+  const usersToInsert: (typeof schema.users.$inferInsert)[] = [
+    { username: 'seba', passwordHash: hash, role: 'SUPERADMIN' },
+    { username: 'luz', passwordHash: hash, role: 'ADMIN' },
+    { username: 'laura', passwordHash: hash, role: 'ADMIN' },
   ];
 
   for (const user of usersToInsert) {
-    await db.insert(schema.users).values(user).onConflictDoNothing();
+    await db.insert(schema.users)
+      .values(user)
+      .onConflictDoUpdate({
+        target: schema.users.username,
+        set: { role: user.role }
+      });
   }
 
   console.log('Users seeded successfully');

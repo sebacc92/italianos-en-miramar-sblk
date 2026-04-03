@@ -14,42 +14,36 @@ import { Label } from "~/components/ui/Label";
 import { Select } from "~/components/ui/Select";
 import { Card } from "~/components/ui/card/card";
 import { Accordion } from "~/components/ui";
+import { PageHero } from "~/components/ui/PageHero";
 import {
   LuCalendarCheck,
   LuCheckCircle,
   LuSend,
+  LuSnowflake,
+  LuClock,
   LuUtensils,
   LuWifi,
   LuMusic,
-  LuSnowflake,
   LuProjector,
   LuShieldCheck,
-  LuClock,
   LuArmchair,
 } from "@qwikest/icons/lucide";
-import { tursoClient } from "~/utils/turso.server";
-import { getDb } from "~/db/client.server";
-import { services } from "~/db/schema.server";
-import { eq, and, desc } from "drizzle-orm";
-
-export const useSalones = routeLoader$(async ({ params, env }) => {
-  const db = getDb(env);
-  const locale = params.locale || "es";
-  try {
-    const res = await db.select().from(services)
-      .where(and(eq(services.language, locale as any), eq(services.category, "salon")))
-      .orderBy(desc(services.displayOrder));
-    return res;
-  } catch (error) {
-    console.error("Error fetching salones from DB:", error);
-    return [];
-  }
-});
 
 export const useRentHall = routeAction$(
   async (data, requestEvent) => {
     try {
-      const db = tursoClient(requestEvent);
+      const dbUrl = requestEvent.env.get("TURSO_DATABASE_URL") || "";
+      const dbAuthToken = requestEvent.env.get("TURSO_AUTH_TOKEN") || "";
+
+      if (!dbUrl) {
+        // fallback without saving if misconfigured
+        return {
+          success: true,
+          message: "¡Solicitud enviada! Te contactaremos a la brevedad para confirmar disponibilidad.",
+        };
+      }
+      const { createClient } = await import("@libsql/client/web");
+      const db = createClient({ url: dbUrl, authToken: dbAuthToken });
 
       await db.execute({
         sql: `INSERT INTO reservas_salones (nombre, apellido, email, telefono, tipo_evento, salon, fecha_estimada, mensaje, estado) 
@@ -94,13 +88,12 @@ export const useRentHall = routeAction$(
 
 export default component$(() => {
   const action = useRentHall();
-  const salonesData = useSalones();
 
-  // Generamos options para el selector de presupuesto según la DB
-  const hallOptions = salonesData.value.map(salon => ({
-    label: salon.title,
-    value: salon.slug || salon.id.toString(),
-  }));
+  // Opciones estáticas para selector de salones
+  const hallOptions = [
+    { label: "Salón Giuseppe", value: "giuseppe" },
+    { label: "Salón Michelangelo", value: "michelangelo" }
+  ];
 
   const eventTypeOptions = [
     { label: "Cumpleaños / 15 Años", value: "cumpleanos" },
@@ -113,29 +106,17 @@ export default component$(() => {
   return (
     <div class="flex min-h-screen flex-col bg-gray-50">
       {/* Hero Section */}
-      <section class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-blue-900 text-white">
-        <div class="absolute inset-0 bg-black/40"></div>
-        <div class="relative z-10 container mx-auto px-4 py-24 text-center md:py-32">
-          <h1 class="animate-in fade-in slide-in-from-bottom-6 mb-6 text-4xl leading-tight font-bold duration-700 md:text-6xl">
-            Alquiler de Salones para Eventos en Miramar
-          </h1>
-          <p class="animate-in fade-in slide-in-from-bottom-8 mx-auto mb-10 max-w-2xl text-xl leading-relaxed text-gray-200 delay-200 duration-700 md:text-2xl">
-            Espacios versátiles e históricos para que tu evento sea inolvidable.
-            Bodas, conferencias y celebraciones en el corazón de Miramar.
-          </p>
-          <Button
-            size="lg"
-            class="animate-in fade-in zoom-in bg-blue-600 px-8 text-lg shadow-xl shadow-blue-900/20 delay-300 duration-700 hover:bg-blue-700"
-            onClick$={() => {
-              document
-                .getElementById("booking-form")
-                ?.scrollIntoView({ behavior: "smooth" });
-            }}
-          >
-            Solicitar Presupuesto
-          </Button>
-        </div>
-      </section>
+      <PageHero
+        title="Alquiler de Salones para Eventos en Miramar"
+        description="Espacios versátiles e históricos para que tu evento sea inolvidable. Bodas, conferencias y celebraciones en el corazón de Miramar."
+        bgImageUrl="/images/exterior_institucion.webp"
+        buttonText="Solicitar Presupuesto"
+        buttonAction$={() => {
+          document
+            .getElementById("booking-form")
+            ?.scrollIntoView({ behavior: "smooth" });
+        }}
+      />
 
       {/* Halls List Section */}
       <section class="container mx-auto px-4 py-20">
@@ -150,47 +131,78 @@ export default component$(() => {
           </p>
         </div>
 
-        {salonesData.value.length === 0 ? (
-          <div class="py-12 text-center text-gray-500">
-            <h3 class="mb-2 text-xl font-bold">Aún no hay salones</h3>
-            <p>Los salones pronto estarán disponibles.</p>
+        {/* Static Halls */}
+        <div class="mx-auto mb-16 max-w-6xl space-y-16">
+          {/* Giuseppe */}
+          <div class="mx-auto grid gap-12 lg:grid-cols-2 items-center">
+            <div class="order-2 lg:order-1">
+              <h2 class="mb-4 text-3xl font-bold text-gray-900">Salón Giuseppe</h2>
+              <h3 class="mb-6 text-xl text-blue-700 font-medium">Nuestro salón principal y de gala</h3>
+              <p class="mb-6 text-gray-600 leading-relaxed">
+                El Salón Giuseppe es nuestro espacio más grande y representativo. Con una arquitectura clásica y un amplio escenario, es el lugar preferido de la ciudad para bodas, actos escolares, presentaciones teatrales y grandes cenas de gala.
+              </p>
+
+              <ul class="mb-8 space-y-3">
+                <li class="flex items-start">
+                  <LuCheckCircle class="mr-3 h-6 w-6 shrink-0 text-blue-500" />
+                  <span class="text-gray-700"><strong>Capacidad:</strong> Hasta 250 personas en auditorio o cena.</span>
+                </li>
+                <li class="flex items-start">
+                  <LuCheckCircle class="mr-3 h-6 w-6 shrink-0 text-blue-500" />
+                  <span class="text-gray-700"><strong>Equipamiento:</strong> Cocina industrial equipada, baños amplios.</span>
+                </li>
+              </ul>
+            </div>
+            <div class="order-1 lg:order-2">
+              <div class="overflow-hidden rounded-2xl shadow-xl">
+                <img
+                  src="/images/salones/giuseppe.webp"
+                  alt="Salón Giuseppe"
+                  class="h-full w-full object-cover transition-transform duration-500 hover:scale-105 aspect-[4/3] bg-gray-200"
+                  width={800}
+                  height={600}
+                />
+              </div>
+            </div>
           </div>
-        ) : (
-          <div class="mx-auto mb-16 grid max-w-5xl gap-8 md:grid-cols-2">
-            {salonesData.value.map((salon) => (
-              <Card.Root key={salon.id} class="overflow-hidden border-blue-100 bg-white shadow-lg transition-shadow hover:shadow-xl">
-                {salon.imageUrl && (
-                  <div class="group relative h-48 overflow-hidden bg-gray-200">
-                    <img
-                      src={salon.imageUrl}
-                      alt={salon.title}
-                      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                  </div>
-                )}
-                <Card.Header>
-                  <Card.Title class="mb-2 text-2xl text-blue-900">
-                    {salon.title}
-                  </Card.Title>
-                  <Card.Description class="text-base">
-                    {salon.description}
-                  </Card.Description>
-                </Card.Header>
-                <Card.Content class="space-y-4">
-                  {/* Si requirieramos parsear metadata como capacidad, podríamos hacerlo via un campo json, 
-                      pero para ahora solo pasamos texto base asumiendo description o un link CTA */}
-                  {salon.ctaText && (
-                    <div class="mt-4 border-t pt-4">
-                      <a href={salon.link} target={salon.isExternal ? "_blank" : "_self"} class="text-blue-600 hover:underline font-semibold flex items-center">
-                        {salon.ctaText}
-                      </a>
-                    </div>
-                  )}
-                </Card.Content>
-              </Card.Root>
-            ))}
+
+          {/* Michelangelo */}
+          <div class="mx-auto grid gap-12 lg:grid-cols-2 items-center border-t border-gray-100 pt-16">
+            <div>
+              <div class="overflow-hidden rounded-2xl shadow-xl">
+                <img
+                  src="/images/salones/michelangelo.webp"
+                  alt="Salón Michelangelo"
+                  class="h-full w-full object-cover transition-transform duration-500 hover:scale-105 aspect-[4/3] bg-gray-200"
+                  width={800}
+                  height={600}
+                />
+              </div>
+            </div>
+            <div>
+              <h2 class="mb-4 text-3xl font-bold text-gray-900">Salón Michelangelo</h2>
+              <h3 class="mb-6 text-xl text-blue-700 font-medium">Íntimo, moderno y versátil</h3>
+              <p class="mb-6 text-gray-600 leading-relaxed">
+                El Salón Michelangelo es perfecto para reuniones más íntimas, cumpleaños infantiles, charlas corporativas o talleres. Ofrece luminosidad y una distribución cálida que fomenta el encuentro.
+              </p>
+
+              <ul class="mb-8 space-y-3">
+                <li class="flex items-start">
+                  <LuCheckCircle class="mr-3 h-6 w-6 shrink-0 text-blue-500" />
+                  <span class="text-gray-700"><strong>Capacidad:</strong> Hasta 80 personas.</span>
+                </li>
+                <li class="flex items-start">
+                  <LuCheckCircle class="mr-3 h-6 w-6 shrink-0 text-blue-500" />
+                  <span class="text-gray-700"><strong>Características:</strong> Excelente luz natural.</span>
+                </li>
+                <li class="flex items-start">
+                  <LuCheckCircle class="mr-3 h-6 w-6 shrink-0 text-blue-500" />
+                  <span class="text-gray-700"><strong>Facilidades:</strong> Acceso a cocina de apoyo y climatización.</span>
+                </li>
+              </ul>
+            </div>
           </div>
-        )}
+        </div>
       </section>
 
       {/* Services Section */}

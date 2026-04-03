@@ -11,6 +11,7 @@ import {
 } from "@qwikest/icons/lucide";
 import { Button } from "~/components/ui/button/button";
 import { Accordion } from "~/components/ui/accordion/accordion";
+import { PageHero } from "~/components/ui/PageHero";
 import DocumentosParaCiudadaniaItalianaImg from "~/media/documentos_para_ciudadania_italiana.png?jsx";
 import { _ } from "compiled-i18n";
 import { generateI18nPaths } from "~/utils/i18n-utils";
@@ -27,16 +28,10 @@ export default component$(() => {
     <div class="flex min-h-screen flex-col">
       <main class="flex-1">
         {/* Hero Section */}
-        <section class="bg-gradient-to-r from-red-600 via-white to-green-600 py-16">
-          <div class="container mx-auto px-4">
-            <div class="text-center">
-              <h1 class="mb-4 text-4xl font-bold">{_`citizenship.title`}</h1>
-              <p class="mx-auto mb-6 max-w-2xl text-lg">
-                {_`citizenship.subtitle`}
-              </p>
-            </div>
-          </div>
-        </section>
+        <PageHero
+          title={_`citizenship.title`}
+          description={_`citizenship.subtitle`}
+        />
 
         {/* Dynamic Attention Time */}
         {atencionData.value && (
