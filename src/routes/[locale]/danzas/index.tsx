@@ -3,12 +3,14 @@ import { type DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
 import { getDb } from "~/db/client.server";
 import { danzasCronograma, danzasGaleria, danzasConfig } from "~/db/schema.server";
 import { desc } from "drizzle-orm";
-import { LuMusic, LuDownload } from "@qwikest/icons/lucide";
+import { LuMusic, LuDownload, LuInstagram, LuPhone, LuMapPin } from "@qwikest/icons/lucide";
 
 export const useDanzasData = routeLoader$(async (requestEvent) => {
   const db = getDb(requestEvent.env);
   const schedule = await db.select().from(danzasCronograma).orderBy(desc(danzasCronograma.hora_inicio));
-  const gallery = await db.select().from(danzasGaleria).orderBy(desc(danzasGaleria.createdAt));
+  const galleryRaw = await db.select().from(danzasGaleria).orderBy(desc(danzasGaleria.createdAt));
+  const gallery = galleryRaw.map(({ createdAt, ...rest }) => rest);
+  
   const configRaw = await db.select().from(danzasConfig).limit(1);
   const currentPdfUrl = configRaw.length > 0 ? configRaw[0].pdf_url : null;
   
@@ -151,6 +153,52 @@ export default component$(() => {
           </div>
         </section>
       )}
+
+      {/* Contacto Danzas */}
+      <section class="bg-[#7F2A7A] py-16 text-white text-center md:text-left">
+        <div class="container mx-auto px-4 max-w-5xl">
+          <div class="flex flex-col md:flex-row items-center gap-8 md:gap-12 bg-white/5 rounded-3xl p-8 backdrop-blur-sm border border-white/10 shadow-2xl">
+            
+            {/* Box Logo Placeholder */}
+            <div class="w-32 h-32 bg-white/10 rounded-2xl border border-white/20 flex flex-col items-center justify-center shrink-0 shadow-inner">
+               <LuMusic class="h-10 w-10 text-white/50 mb-2" />
+               <span class="text-[10px] text-white/50 uppercase font-bold tracking-widest leading-tight text-center px-2">Logo aquí</span>
+               {/* Sube aquí la imagen del logo en el futuro */}
+            </div>
+
+            {/* Info */}
+            <div class="flex flex-col space-y-4 flex-1">
+              <h3 class="text-3xl font-black tracking-tight text-white mb-2 leading-tight">
+                RITMOS EN ACCIÓN <br/>
+                <span class="text-xl font-medium text-white/80 tracking-wide block mt-1">ESCUELA DE DANZAS</span>
+              </h3>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-white/90">
+                 <a href="https://instagram.com/ritmosenaccion" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-white transition-colors">
+                   <LuInstagram class="h-5 w-5 opacity-70" />
+                   <span class="font-bold tracking-wide">@ritmosenaccion</span>
+                 </a>
+                 <a href="tel:2235380187" class="flex items-center gap-3 hover:text-white transition-colors">
+                   <LuPhone class="h-5 w-5 opacity-70" />
+                   <span class="font-bold tracking-wide">223 538-0187</span>
+                 </a>
+                 <div class="flex items-center gap-3 sm:col-span-2">
+                   <LuMapPin class="h-5 w-5 opacity-70 shrink-0" />
+                   <span class="font-medium">Av. 12 n° 1140 (Círculo Italiano - Miramar)</span>
+                 </div>
+              </div>
+            </div>
+            
+            {/* Optional decorative button to whatsapp specifically */}
+            <div class="mt-4 md:mt-0 md:ml-auto">
+               <a href="https://wa.me/5492235380187?text=Hola,%20vengo%20del%20sitio%20web%20del%20C%C3%ADrculo%20Italiano%20y%20me%20gustar%C3%ADa%20recibir%20m%C3%A1s%20informaci%C3%B3n%20sobre%20la%20escuela%20de%20danzas." target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 font-bold text-[#7F2A7A] transition-transform hover:scale-105 active:scale-95 shadow-lg">
+                 Envianos un WhatsApp
+               </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 });

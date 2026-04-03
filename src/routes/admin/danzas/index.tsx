@@ -241,19 +241,20 @@ export default component$(() => {
 
         {/* Media & Config Section */}
         <div class="space-y-8">
-          <PdfUploader
-            currentFileUrl={data.value.currentPdfUrl}
-            onUploadCompleted$={async (url) => {
-              updatePdfAction.submit({ url });
-            }}
-          />
-
           <MultiImageUploader
             currentImageUrls={data.value.galleryUrls}
             maxFiles={12}
             label="Galería de Fotos (Máx 12)"
             onUploadCompleted$={async (urls) => {
               updateGalleryAction.submit({ urls: JSON.stringify(urls) });
+            }}
+          />
+
+          <PdfUploader
+            label="Subir cronograma (PDF)"
+            currentFileUrl={data.value.currentPdfUrl}
+            onUploadCompleted$={async (url) => {
+              updatePdfAction.submit({ url });
             }}
           />
         </div>

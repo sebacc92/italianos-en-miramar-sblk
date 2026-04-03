@@ -13,8 +13,11 @@ export const useAllExposiciones = routeLoader$(async (requestEvent) => {
   
   if (todas.length === 0) return { activeExpo: null, activeObras: [] };
   
-  const activeExpo = todas[0];
-  const activeObras = await db.select().from(exposicionesObras).where(eq(exposicionesObras.exposicion_id, activeExpo.id));
+  const activeExpoRaw = todas[0];
+  const { createdAt: _e, ...activeExpo } = activeExpoRaw;
+
+  const obrasRaw = await db.select().from(exposicionesObras).where(eq(exposicionesObras.exposicion_id, activeExpo.id));
+  const activeObras = obrasRaw.map(({ createdAt, ...rest }) => rest);
   
   return { activeExpo, activeObras };
 });

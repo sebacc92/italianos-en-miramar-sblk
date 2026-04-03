@@ -1,4 +1,5 @@
 import { component$ } from "@builder.io/qwik";
+import { useLocation } from "@builder.io/qwik-city";
 
 interface WhatsAppButtonProps {
   phone?: string;
@@ -10,13 +11,19 @@ export const WhatsAppButton = component$<WhatsAppButtonProps>(
     phone = "5492291514011",
     message = "Hola, vengo desde la web de Círculo Italiano y quisiera más información.",
   }) => {
-    if (!phone) {
+    const loc = useLocation();
+    
+    const isDanzas = loc.url.pathname.includes('/danzas');
+    const finalPhone = isDanzas ? '5492235380187' : phone;
+    const finalMessage = isDanzas ? 'Hola, vengo del sitio web del Círculo Italiano y me gustaría recibir más información sobre la escuela de danzas.' : message;
+
+    if (!finalPhone) {
       return null;
     }
 
-    const cleanPhone = phone.replace(/\D/g, ""); // Remove all non-numeric characters
-    const encodedMessage = message
-      ? `&text=${encodeURIComponent(message)}`
+    const cleanPhone = finalPhone.replace(/\D/g, ""); // Remove all non-numeric characters
+    const encodedMessage = finalMessage
+      ? `&text=${encodeURIComponent(finalMessage)}`
       : "";
     const whatsappUrl = `https://wa.me/${cleanPhone}?${encodedMessage}`;
 

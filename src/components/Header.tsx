@@ -26,7 +26,6 @@ export default component$(() => {
   };
 
   const navigation: NavigationItem[] = [
-    { name: _`nav.home`, href: `/${currentLocale}` },
     { name: _`nav.services`, href: `/${currentLocale}/#servicios` },
     { name: _`nav.events`, href: `/${currentLocale}/eventos` },
     { name: _`nav.about`, href: `/${currentLocale}/nosotros` },
@@ -49,7 +48,7 @@ export default component$(() => {
     <>
       <header class="sticky top-0 z-50 w-full bg-white/95 shadow-sm backdrop-blur-md transition-all duration-300">
         {/* Top bar - Tricolor */}
-        <div class="h-1.5 bg-gradient-to-r from-[#009246] via-white to-[#CE2B37]"></div>
+        <div class="h-1.5 bg-linear-to-r from-[#009246] via-white to-[#CE2B37]"></div>
 
         <div class="container mx-auto px-4">
           <div class="flex h-20 items-center justify-between">

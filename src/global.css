@@ -171,3 +171,4 @@
     @apply bg-background text-foreground lg:text-lg;
   }
 }
+html { scroll-behavior: smooth; }

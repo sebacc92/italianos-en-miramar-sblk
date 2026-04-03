@@ -13,36 +13,24 @@ export const head: DocumentHead = {
 export const useCiudadaniaLoader = routeLoader$(async (requestEvent) => {
   const db = getDb(requestEvent.env);
   const data = await db.select().from(ciudadania).limit(1);
-  return data.length > 0 ? data[0] : { id: "", dia_hora: "" };
+  return data.length > 0 ? data[0] : { id: "", dia_hora: "", nombre_asesora: "" };
 });
 
 export const useUpdateCiudadaniaAction = routeAction$(
   async (data, requestEvent) => {
     const db = getDb(requestEvent.env);
     
-    // Always keep just one record
-    const existing = await db.select().from(ciudadania).limit(1);
-
-    if (existing.length === 0) {
-      await db.insert(ciudadania).values({
-        dia_hora: data.dia_hora,
-      });
-    } else {
-      const dbInstance = await db.select().from(ciudadania).limit(1);
-      const rowId = dbInstance[0]?.id;
-      
-      // Update the first matching generic row (no import needed for eq since it's the only one anyway, but doing raw SQL is worse. Let's just update all or use the ID)
-      await db.update(ciudadania).set({ dia_hora: data.dia_hora }).where({ id: rowId } as any); // using any for simplicity without importing eq, actually it's better to just do db.delete() + db.insert() or import eq. Let's do delete + insert for absolute single record guarantee.
-      await db.delete(ciudadania);
-      await db.insert(ciudadania).values({
-        dia_hora: data.dia_hora,
-      });
-    }
+    await db.delete(ciudadania);
+    await db.insert(ciudadania).values({
+      dia_hora: data.dia_hora,
+      nombre_asesora: data.nombre_asesora,
+    });
 
     return { success: true };
   },
   zod$({
     dia_hora: z.string().min(1, "Debes especificar el día y horario"),
+    nombre_asesora: z.string().min(1, "Debes especificar el nombre de la asesora"),
   })
 );
 
@@ -55,7 +43,7 @@ export default component$(() => {
       <div class="mb-8">
         <h1 class="text-3xl font-black text-gray-900">Ciudadanía</h1>
         <p class="mt-1 text-sm text-gray-500">
-          Configura los horarios de atención de la asesora.
+          Configura los datos de atención de la asesora.
         </p>
       </div>
 
@@ -65,7 +53,7 @@ export default component$(() => {
              <LuLandmark class="h-5 w-5" />
            </div>
            <div>
-             <h2 class="text-lg font-bold text-gray-900">Horario de Asesoramiento</h2>
+             <h2 class="text-lg font-bold text-gray-900">Asesoramiento Consular</h2>
              <p class="text-xs text-gray-500">Impacta directamente en la página web pública.</p>
            </div>
         </div>
@@ -73,16 +61,23 @@ export default component$(() => {
         <div class="mt-6 rounded-lg bg-gray-50 p-4 border border-gray-200">
           <Form action={updateAction} class="space-y-4">
             <div>
-              <label class="mb-1 block text-sm font-semibold text-gray-700">Texto descriptivo de Días y Horarios</label>
+              <label class="mb-1 block text-sm font-semibold text-gray-700">Día y hora de la próxima visita de la asesora</label>
               <Input 
                 name="dia_hora" 
                 value={updateAction.formData?.get('dia_hora')?.toString() ?? compData.value.dia_hora} 
                 placeholder="Ej: Todos los Jueves de 15:00 a 17:00 hs." 
                 required 
               />
-              <p class="mt-1 text-xs text-gray-500">
-               Escribe la información tal cual quieres que la vea el usuario.
-              </p>
+            </div>
+
+            <div>
+              <label class="mb-1 block text-sm font-semibold text-gray-700">Nombre completo de la asesora</label>
+              <Input 
+                name="nombre_asesora" 
+                value={updateAction.formData?.get('nombre_asesora')?.toString() ?? compData.value.nombre_asesora} 
+                placeholder="Ej: María Rossi" 
+                required 
+              />
             </div>
             
             <div class="flex justify-end gap-2 pt-2">

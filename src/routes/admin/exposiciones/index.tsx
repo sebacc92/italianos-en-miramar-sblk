@@ -13,7 +13,8 @@ export const head: DocumentHead = {
 
 export const useExposicionesLoader = routeLoader$(async (requestEvent) => {
   const db = getDb(requestEvent.env);
-  return await db.select().from(exposiciones).orderBy(desc(exposiciones.createdAt));
+  const rows = await db.select().from(exposiciones).orderBy(desc(exposiciones.createdAt));
+  return rows.map(({ createdAt, ...rest }) => rest);
 });
 
 export const useCreateExposicionAction = routeAction$(

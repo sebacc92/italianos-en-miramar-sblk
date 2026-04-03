@@ -183,6 +183,7 @@ export type Autoridad = InferSelectModel<typeof autoridades>;
 export const ciudadania = sqliteTable("ciudadania", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   dia_hora: text("dia_hora").notNull(),
+  nombre_asesora: text("nombre_asesora"),
 });
 
 export type Ciudadania = InferSelectModel<typeof ciudadania>;

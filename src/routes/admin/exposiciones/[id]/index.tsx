@@ -14,10 +14,12 @@ export const useExposicionInfo = routeLoader$(async (requestEvent) => {
   
   const expoQuery = await db.select().from(exposiciones).where(eq(exposiciones.id, expoId)).limit(1);
   if (expoQuery.length === 0) throw requestEvent.error(404, "Exposición no encontrada");
+  const { createdAt: _e, ...expo } = expoQuery[0];
   
-  const obras = await db.select().from(exposicionesObras).where(eq(exposicionesObras.exposicion_id, expoId));
-  
-  return { expo: expoQuery[0], obras };
+  const obrasRaw = await db.select().from(exposicionesObras).where(eq(exposicionesObras.exposicion_id, expoId));
+  const obras = obrasRaw.map(({ createdAt, ...rest }) => rest);
+
+  return { expo, obras };
 });
 
 export const useSyncObrasAction = routeAction$(async (data, requestEvent) => {
