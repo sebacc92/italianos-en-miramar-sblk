@@ -1,5 +1,5 @@
 import { type RequestHandler } from "@builder.io/qwik-city";
-import { put } from "@vercel/blob";
+import { handleUpload } from "@vercel/blob/client";
 
 export const onPost: RequestHandler = async (requestEvent) => {
   const { request, env, json } = requestEvent;
@@ -13,36 +13,30 @@ export const onPost: RequestHandler = async (requestEvent) => {
   }
 
   try {
-    // 2. Extraer el archivo del formData
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
+    const body = await request.json();
 
-    if (!file || !file.name) {
-      requestEvent.status(400);
-      json(400, {
-        error: "No se encontró ningún archivo válido en la petición.",
-      });
-      return;
-    }
-
-    // 3. Subir a Vercel Blob usando put
-    const filename = file.name.replace(/\s+/g, "_");
-
-    // Para entornos Edge usando QwikCity, se pasa explícitamente el token del env
-    const blobToken = env.get("BLOB_READ_WRITE_TOKEN");
-
-    const blob = await put(filename, file, {
-      access: "public",
-      token: blobToken,
+    const jsonResponse = await handleUpload({
+      body,
+      request,
+      onBeforeGenerateToken: async () => {
+         return {
+           allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp'],
+           tokenPayload: JSON.stringify({
+             // Puedes pasar metadata si deseas
+           })
+         };
+      },
+      onUploadCompleted: async ({ blob }) => {
+        // Podrías guardar metadata o registrar subida en DB aquí
+        console.log("Archivo subido:", blob.url);
+      },
+      token: env.get("BLOB_READ_WRITE_TOKEN"),
     });
 
-    // 4. Retornar URL pública
-    json(200, { url: blob.url });
-    return;
+    json(200, jsonResponse);
   } catch (error) {
-    console.error("Error subiendo el archivo a Vercel Blob:", error);
+    console.error("Error en handleUpload:", error);
     requestEvent.status(500);
     json(500, { error: "Error interno al procesar la subida." });
-    return;
   }
 };

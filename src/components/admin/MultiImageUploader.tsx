@@ -1,16 +1,13 @@
 import { component$, $, useSignal, type PropFunction } from "@builder.io/qwik";
-import { LuImagePlus, LuXCircle, LuLoader2, LuCheckCircle2 } from "@qwikest/icons/lucide";
+import { LuImagePlus, LuXCircle, LuLoader2 } from "@qwikest/icons/lucide";
+
+import { upload } from "@vercel/blob/client";
 
 interface MultiImageUploaderProps {
   onUploadCompleted$: PropFunction<(urls: string[]) => void>;
   currentImageUrls?: string[];
   maxFiles?: number;
   label?: string;
-}
-
-interface UploadResponse {
-  url: string;
-  error?: string;
 }
 
 export const MultiImageUploader = component$<MultiImageUploaderProps>(
@@ -46,20 +43,13 @@ export const MultiImageUploader = component$<MultiImageUploaderProps>(
           // Render temp optimistically
           previewUrls.value = [...previewUrls.value, tempUrl];
 
-          const formData = new FormData();
-          formData.append("file", file);
-
-          const response = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
+          const filename = file.name.replace(/\s+/g, "_");
+          const newBlob = await upload(filename, file, {
+            access: 'public',
+            handleUploadUrl: '/api/upload',
           });
 
-          if (!response.ok) {
-            throw new Error("Error al subir una de las imágenes");
-          }
-
-          const data = (await response.json()) as UploadResponse;
-          newUploadedUrls.push(data.url);
+          newUploadedUrls.push(newBlob.url);
         }
 
         // Replace temp URLs with final URLs

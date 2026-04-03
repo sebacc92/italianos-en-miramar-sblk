@@ -1,15 +1,12 @@
 import { component$, $, useSignal, type PropFunction } from "@builder.io/qwik";
 import { LuImagePlus, LuXCircle, LuLoader2, LuCheckCircle2 } from "@qwikest/icons/lucide";
 
+import { upload } from "@vercel/blob/client";
+
 interface ImageUploaderProps {
   onUploadCompleted$: PropFunction<(url: string) => void>;
   currentImageUrl?: string;
   label?: string;
-}
-
-interface UploadResponse {
-  url: string;
-  error?: string;
 }
 
 export const ImageUploader = component$<ImageUploaderProps>(
@@ -34,31 +31,17 @@ export const ImageUploader = component$<ImageUploaderProps>(
         tempUrl = URL.createObjectURL(file);
         previewUrl.value = tempUrl;
 
-        // 2. Preparar el formData
-        const formData = new FormData();
-        formData.append("file", file);
-
-        // 3. Post HTTP al endpoint protegido de Vercel Blob
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
+        // 2. Usar cliente nativo de Vercel Blob
+        const filename = file.name.replace(/\s+/g, "_");
+        const newBlob = await upload(filename, file, {
+           access: 'public',
+           handleUploadUrl: '/api/upload',
         });
 
-        if (!response.ok) {
-          let errorMsg = "Error al subir la imagen";
-          try {
-            const errorData = (await response.json()) as UploadResponse;
-            if (errorData.error) errorMsg = errorData.error;
-          } catch (e) { console.debug("Error parsing JSON:", e); } // Si falla el JSON (ej. 401 puro)
-          throw new Error(errorMsg);
-        }
-
-        const data = (await response.json()) as UploadResponse;
-
-        // 4. Emitir al componente padre la url definitiva
-        await onUploadCompleted$(data.url);
+        // 3. Emitir al componente padre la url definitiva
+        await onUploadCompleted$(newBlob.url);
         
-        previewUrl.value = data.url; // Reset al valor final real
+        previewUrl.value = newBlob.url; // Reset al valor final real
         uploadSuccess.value = true;
       } catch (e: any) {
         console.error("Subida fallida:", e);
