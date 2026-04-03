@@ -20,7 +20,7 @@ export const onPost: RequestHandler = async (requestEvent) => {
       request,
       onBeforeGenerateToken: async () => {
          return {
-           allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp'],
+           allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
            tokenPayload: JSON.stringify({
              // Puedes pasar metadata si deseas
            })

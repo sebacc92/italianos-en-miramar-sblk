@@ -7,6 +7,7 @@ import { generateI18nPaths } from "~/utils/i18n-utils";
 import { getDb } from "~/db/client.server";
 import { events } from "~/db/schema.server";
 import { eq, desc } from "drizzle-orm";
+import { stripHtml } from "~/utils/stringUtils";
 
 export const useEventos = routeLoader$(async ({ params, env }) => {
   const db = getDb(env);
@@ -133,8 +134,8 @@ export default component$(() => {
                         {evento.title}
                       </Card.Title>
                       {evento.description && (
-                        <p class="mb-4 line-clamp-3 text-sm text-gray-600">
-                          {evento.description}
+                        <p class="mb-4 line-clamp-3 text-sm text-gray-600" title={stripHtml(evento.description)}>
+                          {stripHtml(evento.description)}
                         </p>
                       )}
                       

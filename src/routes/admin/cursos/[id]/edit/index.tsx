@@ -26,34 +26,24 @@ export const useUpdateCourseAction = routeAction$(
     const id = Number(requestEvent.params.id);
     if (!id || isNaN(id)) return requestEvent.fail(400, { error: "ID inválido" });
 
-    // Sólo actualizamos el slug si el título cambió sustancialmente, o simplemente siempre lo regeneramos para mantenerlo sincronizado
-    const slug = data.title
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)+/g, "");
-
     await db.update(courses).set({
-      title: data.title,
-      slug: slug,
-      language: data.language as "es" | "it",
-      courseLanguage: data.courseLanguage,
-      level: data.level,
-      schedule: data.schedule,
-      description: data.description,
-      imageUrl: data.imageUrl || null,
+      nombre_curso: data.nombre_curso,
+      profesor: data.profesor,
+      horarios: data.horarios,
+      precio_socio: data.precio_socio,
+      precio_no_socio: data.precio_no_socio,
+      precio_inscripcion: data.precio_inscripcion,
     }).where(eq(courses.id, id));
 
     throw requestEvent.redirect(302, "/admin/cursos");
   },
   zod$({
-    title: z.string().min(1, "El título es obligatorio"),
-    language: z.enum(["es", "it"]),
-    courseLanguage: z.string().min(1, "El idioma de enseñanza es obligatorio"),
-    schedule: z.string().min(1, "El horario es obligatorio"),
-    level: z.string().default("Básico"),
-    description: z.string().min(1, "La descripción es obligatoria"),
-    imageUrl: z.string().optional(),
+    nombre_curso: z.string().min(1, "El curso es obligatorio"),
+    profesor: z.string().min(1, "El profesor es obligatorio"),
+    horarios: z.string().min(1, "Los horarios son obligatorios"),
+    precio_socio: z.coerce.number().min(0),
+    precio_no_socio: z.coerce.number().min(0),
+    precio_inscripcion: z.coerce.number().min(0),
   })
 );
 
@@ -73,7 +63,7 @@ export default component$(() => {
         <div>
           <h1 class="text-3xl font-black text-gray-900">Editar Curso</h1>
           <p class="mt-1 text-sm text-gray-500">
-            Editando: {courseData.value.title}
+            Editando: {courseData.value.nombre_curso}
           </p>
         </div>
       </div>

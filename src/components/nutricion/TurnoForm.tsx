@@ -6,27 +6,27 @@ import { Label } from "~/components/ui/Label";
 import { Select } from "~/components/ui/Select";
 import { Card } from "~/components/ui/card/card";
 import { LuSend, LuCheckCircle } from "@qwikest/icons/lucide";
-interface InscriptionFormProps {
+
+interface TurnoFormProps {
   action: ActionStore<any, any>;
-  courses: Array<{ id: number; nombre_curso: string; horarios: string }>;
+  profesionales: Array<{ id: string; nombre: string }>;
 }
 
-export const InscriptionForm = component$<InscriptionFormProps>(
-  ({ action, courses }) => {
-    // Opciones para el select basadas en los cursos disponibles
-    const courseOptions = courses.map((c) => ({
-      label: `${c.nombre_curso} (${c.horarios || 'Consultar horario'})`,
-      value: String(c.id),
+export const TurnoForm = component$<TurnoFormProps>(
+  ({ action, profesionales }) => {
+    const profOptions = profesionales.map((p) => ({
+      label: p.nombre,
+      value: String(p.id),
     }));
 
     return (
       <Card.Root class="mx-auto w-full max-w-2xl border-t-4 border-t-green-600 shadow-xl">
         <Card.Header class="pb-2 text-center">
           <Card.Title class="text-2xl text-gray-800 md:text-3xl">
-            Asegura tu vacante
+            Solicitar Turno
           </Card.Title>
           <Card.Description>
-            Completa tus datos para pre-inscribirte al Ciclo Lectivo 2026.
+            Completa tus datos para agendar una consulta de nutrición.
           </Card.Description>
         </Card.Header>
         <Card.Content>
@@ -39,14 +39,13 @@ export const InscriptionForm = component$<InscriptionFormProps>(
                 ¡Solicitud Enviada!
               </h3>
               <p class="mb-6 text-green-700">
-                Hemos recibido tus datos correctamente. Te contactaremos por
-                WhatsApp a la brevedad para confirmar tu inscripción.
+                Hemos recibido tus datos correctamente. El profesional te contactará por WhatsApp a la brevedad para coordinar el turno.
               </p>
               <Button
                 variant="outline"
                 onClick$={() => window.location.reload()}
               >
-                Inscribir a otra persona
+                Solicitar otro turno
               </Button>
             </div>
           ) : (
@@ -99,8 +98,8 @@ export const InscriptionForm = component$<InscriptionFormProps>(
               </div>
 
               <div class="space-y-2">
-                <Label for="course">Curso de interés</Label>
-                <Select name="course" id="course" options={courseOptions} />
+                <Label for="course">Profesional</Label>
+                <Select name="course" id="course" options={profOptions} />
                 {action.value?.fieldErrors?.course && (
                   <p class="mt-1 text-xs text-red-600">
                     {action.value.fieldErrors.course}
@@ -119,14 +118,10 @@ export const InscriptionForm = component$<InscriptionFormProps>(
                     "Enviando..."
                   ) : (
                     <>
-                      Enviar Pre-inscripción <LuSend class="ml-2 h-4 w-4" />
+                      Enviar Solicitud <LuSend class="ml-2 h-4 w-4" />
                     </>
                   )}
                 </Button>
-                <p class="mt-4 text-center text-xs text-gray-500">
-                  * La pre-inscripción no garantiza la vacante hasta confirmar
-                  el pago de la matrícula.
-                </p>
               </div>
             </Form>
           )}

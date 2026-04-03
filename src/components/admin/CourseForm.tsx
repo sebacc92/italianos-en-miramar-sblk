@@ -1,6 +1,5 @@
-import { component$, useSignal } from "@builder.io/qwik";
+import { component$ } from "@builder.io/qwik";
 import { Form, Link } from "@builder.io/qwik-city";
-import { ImageUploader } from "~/components/ui/ImageUploader";
 
 interface CourseFormProps {
   action: any;
@@ -8,7 +7,6 @@ interface CourseFormProps {
 }
 
 export const CourseForm = component$<CourseFormProps>(({ action, course }) => {
-  const imageUrlSig = useSignal<string>(course?.imageUrl || "");
 
   return (
     <div class="max-w-3xl rounded-xl border border-gray-200 bg-white p-8">
@@ -44,45 +42,26 @@ export const CourseForm = component$<CourseFormProps>(({ action, course }) => {
             </label>
             <input
               type="text"
-              name="title"
+              name="nombre_curso"
               required
-              value={course?.title || ""}
+              value={course?.nombre_curso || ""}
               class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
               placeholder="Ej: Italiano Básico (A1/A2)"
             />
           </div>
 
-          {/* Lenguaje de Visualización */}
+          {/* Profesor */}
           <div>
             <label class="mb-2 block text-sm font-semibold text-gray-700">
-              Idioma (Versión web) *
-            </label>
-            <select
-              name="language"
-              required
-              class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
-            >
-              <option value="es" selected={course?.language === "es" || !course}>
-                Español (es)
-              </option>
-              <option value="it" selected={course?.language === "it"}>
-                Italiano (it)
-              </option>
-            </select>
-          </div>
-
-          {/* Lenguaje a Enseñar (Columna de esquema requerida) */}
-          <div>
-            <label class="mb-2 block text-sm font-semibold text-gray-700">
-              Idioma dictado *
+              Profesor *
             </label>
             <input
               type="text"
-              name="courseLanguage"
+              name="profesor"
               required
-              value={course?.courseLanguage || ""}
+              value={course?.profesor || ""}
               class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
-              placeholder="Ej: Italiano"
+              placeholder="Ej: Luciano Giacommi"
             />
           </div>
 
@@ -93,53 +72,56 @@ export const CourseForm = component$<CourseFormProps>(({ action, course }) => {
             </label>
             <input
               type="text"
-              name="schedule"
+              name="horarios"
               required
-              value={course?.schedule || ""}
+              value={course?.horarios || ""}
               class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
-              placeholder="Ej: Martes y Jueves, 18:30hs"
+              placeholder="Ej: Lunes y Miércoles | 15:00 a 16:30"
             />
           </div>
 
-          {/* Nivel */}
+          {/* Precios */}
           <div>
             <label class="mb-2 block text-sm font-semibold text-gray-700">
-              Nivel
+              Precio Socio ($) *
             </label>
             <input
-              type="text"
-              name="level"
+              type="number"
+              name="precio_socio"
               required
-              value={course?.level || "Básico"}
+              min="0"
+              value={course?.precio_socio || 0}
               class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
-              placeholder="Ej: A1, Inicial, Avanzado"
             />
           </div>
-        </div>
 
-        {/* Descripción */}
-        <div>
-          <label class="mb-2 block text-sm font-semibold text-gray-700">
-            Descripción *
-          </label>
-          <textarea
-            name="description"
-            required
-            rows={5}
-            class="w-full resize-y rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
-            placeholder="Detalles sobre el enfoque, la metodología, etc."
-          >{course?.description || ""}</textarea>
-        </div>
+          <div>
+            <label class="mb-2 block text-sm font-semibold text-gray-700">
+              Precio No Socio ($) *
+            </label>
+            <input
+              type="number"
+              name="precio_no_socio"
+              required
+              min="0"
+              value={course?.precio_no_socio || 0}
+              class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
+            />
+          </div>
 
-        {/* Imagen Uploader */}
-        <div class="border-t border-gray-100 pt-6">
-          <input type="hidden" name="imageUrl" value={imageUrlSig.value} />
-          <ImageUploader
-            currentImageUrl={course?.imageUrl || undefined}
-            onUploadCompleted$={(url) => {
-              imageUrlSig.value = url;
-            }}
-          />
+          <div>
+            <label class="mb-2 block text-sm font-semibold text-gray-700">
+              Precio Inscripción ($) *
+            </label>
+            <input
+              type="number"
+              name="precio_inscripcion"
+              required
+              min="0"
+              value={course?.precio_inscripcion || 0}
+              class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-500"
+            />
+          </div>
         </div>
 
         {/* Acciones */}

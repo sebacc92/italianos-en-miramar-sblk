@@ -35,18 +35,12 @@ export type Event = InferSelectModel<typeof events>;
 
 export const courses = sqliteTable("courses", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  slug: text("slug").notNull(), // e.g. italiano-1-inicial
-  language: text("language", { enum: ["es", "it"] }).notNull().default("es"),
-  courseLanguage: text("course_language").notNull(), // 'italiano', 'ingles'
-  title: text("title").notNull(),
-  level: text("level").notNull(),
-  description: text("description").notNull(),
-  imageUrl: text("image_url"),
-  features: text("features", { mode: "json" }), // array of features
-  schedule: text("schedule"),
-  teacher: text("teacher"),
-  isHighlight: integer("is_highlight", { mode: "boolean" }).default(false),
-  badge: text("badge"),
+  nombre_curso: text("nombre_curso").notNull(),
+  profesor: text("profesor").notNull(),
+  horarios: text("horarios").notNull(),
+  precio_socio: integer("precio_socio").notNull(),
+  precio_no_socio: integer("precio_no_socio").notNull(),
+  precio_inscripcion: integer("precio_inscripcion").notNull(),
   displayOrder: integer("display_order").default(0),
 });
 
@@ -117,3 +111,113 @@ export const solicitudes_asociacion = sqliteTable("solicitudes_asociacion", {
   idx_solicitudes_fecha: index("idx_solicitudes_fecha").on(table.fecha_solicitud),
   idx_solicitudes_estado: index("idx_solicitudes_estado").on(table.estado),
 }));
+
+// ==========================================
+// NUEVO MÓDULO: DANZAS
+// ==========================================
+
+export const danzasCronograma = sqliteTable("danzas_cronograma", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  clase: text("clase").notNull(),
+  categoria: text("categoria").notNull(),
+  profesores: text("profesores").notNull(),
+  dia_semana: text("dia_semana").notNull(),
+  hora_inicio: text("hora_inicio").notNull(),
+  hora_fin: text("hora_fin").notNull(),
+  salon: integer("salon").notNull(),
+});
+
+export const danzasGaleria = sqliteTable("danzas_galeria", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  imageUrl: text("image_url").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+});
+
+export type DanzaCronograma = InferSelectModel<typeof danzasCronograma>;
+export type DanzaGaleria = InferSelectModel<typeof danzasGaleria>;
+
+// ==========================================
+// NUEVO MÓDULO: NUTRICIÓN
+// ==========================================
+
+export const nutricionProfesionales = sqliteTable("nutricion_profesionales", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  nombre: text("nombre").notNull(),
+  descripcion_servicios: text("descripcion_servicios").notNull(),
+  dia_semana: text("dia_semana").notNull(),
+  hora_inicio: text("hora_inicio").notNull(),
+  hora_fin: text("hora_fin").notNull(),
+});
+
+export type NutricionProfesional = InferSelectModel<typeof nutricionProfesionales>;
+
+// ==========================================
+// NUEVO MÓDULO: ARTE
+// ==========================================
+
+export const arteCursos = sqliteTable("arte_cursos", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  nombre: text("nombre").notNull(),
+  dia_semana: text("dia_semana").notNull(),
+  hora_inicio: text("hora_inicio").notNull(),
+  hora_fin: text("hora_fin").notNull(),
+  descripcion: text("descripcion").notNull(),
+});
+
+export type ArteCurso = InferSelectModel<typeof arteCursos>;
+
+// ==========================================
+// AUTORIDADES
+// ==========================================
+export const autoridades = sqliteTable("autoridades", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  nombre: text("nombre").notNull(),
+  cargo: text("cargo").notNull(),
+});
+
+export type Autoridad = InferSelectModel<typeof autoridades>;
+
+// ==========================================
+// CIUDADANÍA
+// ==========================================
+export const ciudadania = sqliteTable("ciudadania", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  dia_hora: text("dia_hora").notNull(),
+});
+
+export type Ciudadania = InferSelectModel<typeof ciudadania>;
+
+// ==========================================
+// CONFIGURACIÓN DE DANZAS
+// ==========================================
+export const danzasConfig = sqliteTable("danzas_config", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  pdf_url: text("pdf_url").notNull(),
+});
+
+export type DanzasConfig = InferSelectModel<typeof danzasConfig>;
+
+// ==========================================
+// EXPOSICIONES
+// ==========================================
+export const exposiciones = sqliteTable("exposiciones", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  titulo: text("titulo").notNull(),
+  fecha_inauguracion: text("fecha_inauguracion").notNull(),
+  nombre_artista: text("nombre_artista").notNull(),
+  contacto_artista: text("contacto_artista").notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export type Exposicion = InferSelectModel<typeof exposiciones>;
+
+export const exposicionesObras = sqliteTable("exposiciones_obras", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  exposicion_id: text("exposicion_id").notNull().references(() => exposiciones.id, { onDelete: 'cascade' }),
+  image_url: text("image_url").notNull(),
+  titulo_obra: text("titulo_obra"),
+  descripcion_obra: text("descripcion_obra"),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export type ExposicionObra = InferSelectModel<typeof exposicionesObras>;

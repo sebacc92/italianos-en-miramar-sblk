@@ -58,34 +58,20 @@ export default component$(() => {
             <table class="w-full text-left text-sm text-gray-600">
               <thead class="bg-gray-50 text-xs uppercase text-gray-500">
                 <tr>
-                  <th class="px-6 py-4 font-semibold">Portada</th>
-                  <th class="px-6 py-4 font-semibold">Título</th>
-                  <th class="px-6 py-4 font-semibold">Idioma Dictado</th>
-                  <th class="px-6 py-4 font-semibold">Nivel</th>
+                  <th class="px-6 py-4 font-semibold">Curso</th>
+                  <th class="px-6 py-4 font-semibold">Profesor</th>
+                  <th class="px-6 py-4 font-semibold">Horarios</th>
                   <th class="px-6 py-4 text-right font-semibold">Acciones</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 whitespace-nowrap">
                 {coursesData.value.map((course) => (
                   <tr key={course.id} class="transition-colors hover:bg-gray-50">
-                    <td class="px-6 py-4">
-                      {course.imageUrl ? (
-                        <img
-                          src={course.imageUrl}
-                          alt={course.title}
-                          class="h-10 w-16 rounded-md object-cover shadow-sm"
-                        />
-                      ) : (
-                        <div class="flex h-10 w-16 items-center justify-center rounded-md bg-gray-100 text-xs text-gray-400">
-                          N/A
-                        </div>
-                      )}
-                    </td>
                     <td class="px-6 py-4 font-medium text-gray-900">
-                      {course.title}
+                      {course.nombre_curso}
                     </td>
-                    <td class="px-6 py-4 capitalize">{course.courseLanguage}</td>
-                    <td class="px-6 py-4">{course.level}</td>
+                    <td class="px-6 py-4">{course.profesor}</td>
+                    <td class="px-6 py-4">{course.horarios}</td>
                     <td class="px-6 py-4 text-right">
                       <div class="flex items-center justify-end gap-2">
                         <Link

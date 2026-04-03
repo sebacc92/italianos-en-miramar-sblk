@@ -1,11 +1,13 @@
 import { component$ } from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
-import { Link } from "@builder.io/qwik-city";
+import { type DocumentHead, routeLoader$, Link } from "@builder.io/qwik-city";
+import { getDb } from "~/db/client.server";
+import { ciudadania } from "~/db/schema.server";
 import {
   LuCheck,
   LuFileText,
   LuHelpCircle,
   LuInfo,
+  LuClock,
 } from "@qwikest/icons/lucide";
 import { Button } from "~/components/ui/button/button";
 import { Accordion } from "~/components/ui/accordion/accordion";
@@ -13,7 +15,14 @@ import DocumentosParaCiudadaniaItalianaImg from "~/media/documentos_para_ciudada
 import { _ } from "compiled-i18n";
 import { generateI18nPaths } from "~/utils/i18n-utils";
 
+export const useCiudadaniaAtencion = routeLoader$(async (requestEvent) => {
+  const db = getDb(requestEvent.env);
+  const row = await db.select().from(ciudadania).limit(1);
+  return row.length > 0 ? row[0].dia_hora : null;
+});
+
 export default component$(() => {
+  const atencionData = useCiudadaniaAtencion();
   return (
     <div class="flex min-h-screen flex-col">
       <main class="flex-1">
@@ -28,6 +37,17 @@ export default component$(() => {
             </div>
           </div>
         </section>
+
+        {/* Dynamic Attention Time */}
+        {atencionData.value && (
+          <div class="bg-green-50 py-4 text-center border-b border-green-100 shadow-inner">
+             <span class="inline-flex items-center text-green-900 font-medium md:text-lg">
+                <LuClock class="mr-2 h-5 w-5" /> 
+                <span class="mr-1">Atención de la Asesora Consular:</span>
+                <strong class="font-bold">{atencionData.value}</strong>
+             </span>
+          </div>
+        )}
 
         {/* Services Section */}
         <section class="bg-white py-16">

@@ -24,7 +24,6 @@ export const useCourses = routeLoader$(async ({ params, env }) => {
     const res = await db
       .select()
       .from(courses)
-      .where(eq(courses.language, locale as any))
       .orderBy(desc(courses.displayOrder));
     
     return res;
@@ -131,63 +130,6 @@ export default component$(() => {
         </div>
 
         <CourseList courses={cursos.value} />
-      </section>
-
-      {/* Pricing Section */}
-      <section class="bg-gray-100 py-16">
-        <div class="container mx-auto px-4">
-          <div class="mb-12 text-center">
-            <h2 class="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
-              Valores
-            </h2>
-            <div class="mx-auto mb-6 h-1 w-16 rounded-full bg-green-600"></div>
-            <p class="mx-auto max-w-2xl text-lg text-gray-600">
-              Cursos diseñados para todas las edades y niveles.
-            </p>
-          </div>
-
-          <div class="mx-auto max-w-4xl">
-            <div class="grid gap-6 md:grid-cols-2">
-              {/* Nivel 1 */}
-              <div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md">
-                <h3 class="mb-2 text-xl font-bold text-gray-900">Nivel 1º Inicial</h3>
-                <p class="mb-6 text-sm text-gray-500">Valor general para el primer nivel</p>
-                <div class="flex items-baseline text-4xl font-extrabold text-green-700">
-                  $20.000<span class="ml-2 text-lg font-medium text-gray-500">/mes</span>
-                </div>
-              </div>
-
-              {/* Demás Niveles */}
-              <div class="rounded-2xl bg-gradient-to-br from-green-700 to-green-800 p-8 text-white shadow-md ring-1 ring-green-700">
-                <h3 class="mb-2 text-xl font-bold">Demás Niveles</h3>
-                <p class="mb-6 text-sm text-green-100">Valores para niveles superiores</p>
-                <div class="space-y-4">
-                  <div class="flex items-center justify-between border-b border-green-600/50 pb-4">
-                    <span class="font-medium text-green-50">Socios</span>
-                    <div class="flex items-baseline text-3xl font-bold">
-                      $25.000<span class="ml-1 text-base font-normal text-green-200">/mes</span>
-                    </div>
-                  </div>
-                  <div class="flex items-center justify-between pt-2">
-                    <span class="font-medium text-green-50">No Socios</span>
-                    <div class="flex items-baseline text-3xl font-bold">
-                      $30.000<span class="ml-1 text-base font-normal text-green-200">/mes</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="mt-8 rounded-xl bg-blue-50 p-6 text-center ring-1 ring-blue-100">
-              <p class="text-blue-900">
-                <span class="font-semibold">Inscripción general:</span> $10.000 (pago único)
-              </p>
-              <p class="mt-2 text-sm text-blue-700">
-                ¡Cualquier consulta sobre las inscripciones, estamos a disposición!
-              </p>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Inscription Form Section */}
