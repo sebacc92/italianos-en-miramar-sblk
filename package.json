@@ -21,11 +21,11 @@
     "lint": "eslint \"src/**/*.ts*\"",
     "preview": "qwik build preview && vite preview --open",
     "start": "vite --open --mode ssr",
-    "qwik": "qwik",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx scripts/seed-users.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "qwik": "qwik"
   },
   "devDependencies": {
     "@builder.io/qwik": "^1.19.0",
@@ -38,6 +38,7 @@
     "@tailwindcss/vite": "^4.1.4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "20.19.0",
+    "autoprefixer": "^10.4.14",
     "class-variance-authority": "0.7.1",
     "compiled-i18n": "^1.2.1",
     "dotenv": "^17.3.1",
@@ -46,6 +47,8 @@
     "eslint-plugin-qwik": "^1.19.0",
     "globals": "16.4.0",
     "nx": "^22.4.5",
+    "postcss": "^8.4.31",
+    "postcss-preset-env": "^9.1.0",
     "prettier": "3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "qwik-ui": "^0.4.3",
@@ -64,6 +67,7 @@
     "@libsql/client": "^0.17.2",
     "@vercel/blob": "^2.3.2",
     "bcryptjs": "^3.0.3",
+    "cssnano": "^7.1.4",
     "drizzle-orm": "^0.45.2"
   }
 }
