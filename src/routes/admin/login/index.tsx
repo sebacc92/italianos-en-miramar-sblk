@@ -34,21 +34,20 @@ export const useLoginAction = routeAction$(
 
       // 4. Crear sesión (Cookie HttpOnly) por 7 días
       cookie.set("admin_session", user.id.toString(), {
-        secure: true,
+        secure: import.meta.env.PROD,
         httpOnly: true,
         path: "/",
         maxAge: [7, "days"],
         sameSite: "lax",
       });
 
-      // 5. Redirigir al panel
-      throw redirect(302, "/admin");
-
     } catch (error) {
-      if (error instanceof Response) throw error; // Respetar el throw redirect
       console.error("Error en login:", error);
       return fail(500, { message: "Error interno del servidor" });
     }
+    
+    // 5. Redirigir al panel fuera del try-catch para no interferir con el manejo de estado de Qwik
+    throw redirect(302, "/admin");
   },
   zod$({
     username: z.string().min(1, "Usuario requerido"),

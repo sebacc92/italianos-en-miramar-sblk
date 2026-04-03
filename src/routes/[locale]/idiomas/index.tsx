@@ -14,18 +14,18 @@ import { courses } from "~/db/schema.server";
 import { eq, desc } from "drizzle-orm";
 // Este utils/turso sigue usándose para la InscriptionForm asumiendo que es legacy/otra app config,
 // Si "tursoClient" usa env, asegurémonos que funciona
-import { tursoClient } from "~/utils/turso.server"; 
+import { tursoClient } from "~/utils/turso.server";
 
 export const useCourses = routeLoader$(async ({ params, env }) => {
   const db = getDb(env);
   const locale = params.locale || "es";
-  
+
   try {
     const res = await db
       .select()
       .from(courses)
       .orderBy(desc(courses.displayOrder));
-    
+
     return res;
   } catch (error) {
     console.error("Error fetching courses from DB:", error);
@@ -83,7 +83,6 @@ export default component$(() => {
             Ciclo Lectivo Marzo 2026
           </h1>
           <p class="animate-in fade-in slide-in-from-bottom-8 mx-auto mb-10 max-w-2xl text-xl leading-relaxed text-gray-200 delay-200 duration-700 md:text-2xl">
-            Abriremos las puertas a una nueva experiencia de aprendizaje.
             Reserva tu lugar en nuestros cursos de italiano e inglés.
           </p>
           <Button

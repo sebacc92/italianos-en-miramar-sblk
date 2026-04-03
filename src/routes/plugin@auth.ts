@@ -18,9 +18,17 @@ export const onRequest: RequestHandler = async ({ url, cookie, redirect, sharedM
   if (sessionCookie) {
     const db = getDb(env);
     const userId = parseInt(sessionCookie.value, 10);
+    
+    if (isNaN(userId)) {
+      cookie.delete('admin_session', { path: '/' });
+      if (!isLoginRoute) throw redirect(302, '/admin/login');
+      return;
+    }
+
     const userRows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     
     if (userRows.length === 0) {
+      cookie.delete('admin_session', { path: '/' });
       if (!isLoginRoute) throw redirect(302, '/admin/login');
       return;
     }

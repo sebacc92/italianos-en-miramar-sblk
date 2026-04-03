@@ -100,13 +100,13 @@ export default component$(() => {
       </div>
       <article class="mx-auto max-w-4xl overflow-hidden rounded-lg bg-white shadow-lg">
         {content.imageUrl && (
-           <div class="h-64 sm:h-80 md:h-96 overflow-hidden">
+           <div class="mx-auto max-w-2xl mt-8 mb-4 px-6 md:px-0">
              <img
                src={content.imageUrl}
                alt={content.imageAlt || content.title}
-               class="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+               class="w-full max-h-[80vh] object-contain rounded-xl shadow-lg bg-zinc-50"
                width="1200"
-               height="600"
+               height="1200"
              />
            </div>
         )}

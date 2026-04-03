@@ -79,7 +79,7 @@ export default component$(() => {
                 <NavLink
                   key={item.name}
                   href={item.href}
-                  class="relative px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:text-green-700"
+                  class="relative px-4 py-3 text-lg font-medium text-gray-700 transition-colors hover:text-green-700"
                   activeClass="text-green-700 font-bold"
                 >
                   {item.name}
@@ -195,7 +195,7 @@ export default component$(() => {
                     <NavLink
                       key={item.name}
                       href={item.href}
-                      class="rounded-lg px-4 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-green-50 hover:text-green-700"
+                      class="rounded-lg px-4 py-3 text-lg font-medium text-gray-700 transition-colors hover:bg-green-50 hover:text-green-700"
                       activeClass="bg-green-50 text-green-700 font-bold"
                     >
                       {item.name}
