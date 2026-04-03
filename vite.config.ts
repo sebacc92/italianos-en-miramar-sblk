@@ -39,11 +39,6 @@ export default defineConfig(({ command, mode }): UserConfig => {
     /**
      * This is an advanced setting. It improves the bundling of your server code. To use it, make sure you understand when your consumed packages are dependencies or dev dependencies. (otherwise things will break in production)
     */
-    build: {
-      rollupOptions: {
-        external: ['@libsql/client', '@libsql/client/web', 'drizzle-orm/libsql', 'node:buffer', 'node:fs', 'node:path', 'node:child_process']
-      }
-    },
     // ssr:
     //   command === "build" && mode === "production"
     //     ? {
