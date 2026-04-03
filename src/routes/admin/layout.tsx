@@ -1,5 +1,5 @@
 import { component$, Slot } from "@builder.io/qwik";
-import { Link, useLocation } from "@builder.io/qwik-city";
+import { Link, useLocation, routeLoader$ } from "@builder.io/qwik-city";
 import {
   LuLayoutDashboard,
   LuUsers,
@@ -44,11 +44,7 @@ const navLinks = [
     label: "Cursos de Idiomas",
     icon: <LuLanguages class="h-5 w-5" />,
   },
-  {
-    href: "/admin/sala-exposiciones",
-    label: "Sala de exposiciones",
-    icon: <LuImage class="h-5 w-5" />,
-  },
+
   {
     href: "/admin/danzas",
     label: "Ritmos en acción",
@@ -66,16 +62,40 @@ const navLinks = [
   },
 ];
 
+const AccessDenied = component$(() => {
+  return (
+    <div class="flex min-h-[50vh] flex-col items-center justify-center text-center">
+      <div class="mb-4 rounded-full bg-red-100 p-4">
+        <LuLogOut class="h-10 w-10 text-red-600" />
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900">Acceso Denegado</h2>
+      <p class="mt-2 text-gray-500 max-w-md">
+        No tienes permisos para editar esta sección. Contacta al administrador de Cleverisma.
+      </p>
+    </div>
+  );
+});
+
+export const useAdminSession = routeLoader$((requestEvent) => {
+  return {
+    user: requestEvent.sharedMap.get('user'),
+    accessDenied: requestEvent.sharedMap.get('access_denied') === true
+  };
+});
+
 export default component$(() => {
   const location = useLocation();
+  const adminSession = useAdminSession();
 
   const isLoginPage = location.url.pathname.startsWith("/admin/login");
 
   if (isLoginPage) {
     return <Slot />;
   }
-
-  const userEmail = "Admin";
+  
+  const user = adminSession.value.user;
+  const userEmail = typeof user?.username === 'string' ? user.username : 'Admin';
+  const accessDenied = adminSession.value.accessDenied;
 
   return (
     <div class="flex min-h-screen bg-gray-50 font-sans">
@@ -162,7 +182,7 @@ export default component$(() => {
 
         {/* Page content */}
         <div class="p-8">
-          <Slot />
+          {accessDenied ? <AccessDenied /> : <Slot />}
         </div>
       </main>
     </div>

@@ -174,9 +174,9 @@ export default component$(() => {
               </h3>
               
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-white/90">
-                 <a href="https://instagram.com/ritmosenaccion" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-white transition-colors">
+                 <a href="https://instagram.com/ritmos.en.accion" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-white transition-colors">
                    <LuInstagram class="h-5 w-5 opacity-70" />
-                   <span class="font-bold tracking-wide">@ritmosenaccion</span>
+                   <span class="font-bold tracking-wide">@ritmos.en.accion</span>
                  </a>
                  <a href="tel:2235380187" class="flex items-center gap-3 hover:text-white transition-colors">
                    <LuPhone class="h-5 w-5 opacity-70" />
@@ -184,7 +184,7 @@ export default component$(() => {
                  </a>
                  <div class="flex items-center gap-3 sm:col-span-2">
                    <LuMapPin class="h-5 w-5 opacity-70 shrink-0" />
-                   <span class="font-medium">Av. 12 n° 1140 (Círculo Italiano - Miramar)</span>
+                   <span class="font-medium">Calle 24 nº 1214 (Círculo Italiano - Miramar)</span>
                  </div>
               </div>
             </div>
