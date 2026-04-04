@@ -156,7 +156,7 @@ export default component$(() => {
             <div class="order-1 lg:order-2">
               <div class="overflow-hidden rounded-2xl shadow-xl">
                 <img
-                  src="/images/salones/giuseppe.webp"
+                  src="/images/salones/michelangelo.webp"
                   alt="Salón Giuseppe"
                   class="h-full w-full object-cover transition-transform duration-500 hover:scale-105 aspect-[4/3] bg-gray-200"
                   width={800}
@@ -171,7 +171,7 @@ export default component$(() => {
             <div>
               <div class="overflow-hidden rounded-2xl shadow-xl">
                 <img
-                  src="/images/salones/michelangelo.webp"
+                  src="/images/salones/giuseppe.webp"
                   alt="Salón Michelangelo"
                   class="h-full w-full object-cover transition-transform duration-500 hover:scale-105 aspect-[4/3] bg-gray-200"
                   width={800}

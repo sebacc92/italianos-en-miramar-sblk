@@ -1,7 +1,7 @@
 import { component$ } from "@builder.io/qwik";
 import { type DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
 import { getDb } from "~/db/client.server";
-import { users, events, courses, danzasCronograma, arteCursos, nutricionProfesionales, autoridades } from "~/db/schema.server";
+import { users, events, courses, danzasCronograma, arteCursos, nutricionHorarios, autoridades } from "~/db/schema.server";
 import { count, eq } from "drizzle-orm";
 import { routeAction$, zod$, z, Form } from "@builder.io/qwik-city";
 import * as bcrypt from "bcryptjs";
@@ -28,7 +28,7 @@ export const useDashboardStats = routeLoader$(async (requestEvent) => {
     db.select({ value: count() }).from(courses),
     db.select({ value: count() }).from(danzasCronograma),
     db.select({ value: count() }).from(arteCursos),
-    db.select({ value: count() }).from(nutricionProfesionales),
+    db.select({ value: count() }).from(nutricionHorarios),
     db.select({ value: count() }).from(autoridades),
   ]);
 
@@ -86,7 +86,10 @@ export const useUpdatePassword = routeAction$(
 export default component$(() => {
   const stats = useDashboardStats();
   const pwdAction = useUpdatePassword();
-  const userName = stats.value.user.username;
+  const userName = String(stats.value.user.username).toLowerCase();
+
+  const isDanzaNutriUser = userName === 'flor' || userName === 'martinap' || userName === 'martina';
+  const isArteUser = userName === 'natalia';
 
   return (
     <div class="space-y-6">
@@ -100,42 +103,55 @@ export default component$(() => {
       </div>
 
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <span class="mb-2 text-5xl font-black text-green-600">{stats.value.autoridades}</span>
-          <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
-            Autoridades
-          </span>
-        </div>
-        <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <span class="mb-2 text-5xl font-black text-green-600">{stats.value.eventos}</span>
-          <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
-            Eventos Activos
-          </span>
-        </div>
-        <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <span class="mb-2 text-5xl font-black text-green-600">{stats.value.cursos}</span>
-          <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
-            Cursos Idiomas
-          </span>
-        </div>
-        <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <span class="mb-2 text-5xl font-black text-green-600">{stats.value.danzas}</span>
-          <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
-            Clases de Danza
-          </span>
-        </div>
-        <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <span class="mb-2 text-5xl font-black text-green-600">{stats.value.nutricion}</span>
-          <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
-            Nutricionistas
-          </span>
-        </div>
-        <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <span class="mb-2 text-5xl font-black text-green-600">{stats.value.arte}</span>
-          <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
-            Talleres de Arte
-          </span>
-        </div>
+        {(!isDanzaNutriUser && !isArteUser) && (
+          <>
+            <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <span class="mb-2 text-5xl font-black text-green-600">{stats.value.autoridades}</span>
+              <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+                Autoridades
+              </span>
+            </div>
+            <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <span class="mb-2 text-5xl font-black text-green-600">{stats.value.eventos}</span>
+              <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+                Eventos Activos
+              </span>
+            </div>
+            <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <span class="mb-2 text-5xl font-black text-green-600">{stats.value.cursos}</span>
+              <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+                Cursos Idiomas
+              </span>
+            </div>
+          </>
+        )}
+
+        {(!isArteUser) && (
+          <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <span class="mb-2 text-5xl font-black text-green-600">{stats.value.danzas}</span>
+            <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+              Clases de Danza
+            </span>
+          </div>
+        )}
+
+        {(!isArteUser) && (
+          <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <span class="mb-2 text-5xl font-black text-green-600">{stats.value.nutricion}</span>
+            <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+              Horarios Nutrición
+            </span>
+          </div>
+        )}
+
+        {(!isDanzaNutriUser) && (
+          <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <span class="mb-2 text-5xl font-black text-green-600">{stats.value.arte}</span>
+            <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+              Talleres de Arte
+            </span>
+          </div>
+        )}
       </div>
 
       <div class="mt-8 rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">

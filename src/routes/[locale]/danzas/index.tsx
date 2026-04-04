@@ -1,8 +1,9 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useSignal } from "@builder.io/qwik";
 import { type DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
 import { getDb } from "~/db/client.server";
 import { danzasCronograma, danzasGaleria, danzasConfig } from "~/db/schema.server";
 import { desc } from "drizzle-orm";
+import { _ } from "compiled-i18n";
 import { LuMusic, LuDownload, LuInstagram, LuPhone, LuMapPin } from "@qwikest/icons/lucide";
 import { PageHero } from "~/components/ui/PageHero";
 
@@ -23,14 +24,33 @@ export default component$(() => {
   const schedule = data.value.schedule;
   const currentPdfUrl = data.value.currentPdfUrl;
 
+  const selectedCategory = useSignal("Todas");
+  
+  // Extract unique categories and group them alphabetically
+  const uniqueCategories = Array.from(new Set(schedule.map(c => c.categoria))).sort();
+  const sortedCategories = ["Todas", ...uniqueCategories];
+
+  const filteredSchedule = selectedCategory.value === "Todas" 
+    ? schedule 
+    : schedule.filter(c => c.categoria === selectedCategory.value);
+
   const dias = ["Lunes", "Martes", "Miércoles", "Jueves"];
 
   return (
     <div class="flex min-h-screen flex-col bg-gray-50">
       {/* Hero */}
       <PageHero
-        title="Ritmos en Acción"
-        description="Escuela de danzas del Círculo Italiano. Descubrí tu pasión por el baile con nuestros excelentes profesores."
+        title={
+          <div class="flex flex-col items-center justify-center">
+            <img 
+              src="/logo-ritmos-en-accion.webp" 
+              alt="Ritmos en Acción" 
+              class="h-32 md:h-48 mb-6 object-contain drop-shadow-2xl" 
+            />
+            <span>Ritmos en Acción</span>
+          </div>
+        }
+        description={_`dance.hero.pageDescription`}
       />
 
       {/* Schedule Grid */}
@@ -41,20 +61,23 @@ export default component$(() => {
             <div class="mx-auto mt-4 h-1 w-20 rounded-full bg-indigo-600"></div>
           </div>
           
-          <div class="mb-12 text-center">
-            {currentPdfUrl ? (
-               <a 
-                 href={currentPdfUrl} 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition-all hover:bg-indigo-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-95"
-               >
-                 <LuDownload class="mr-2 h-5 w-5" /> Descargar Cronograma (PDF)
-               </a>
-            ) : (
-               <p class="text-sm text-gray-500">Cronograma en PDF no disponible momentáneamente.</p>
-            )}
-          </div>
+          {schedule.length > 0 && (
+            <div class="mb-10 flex flex-wrap items-center justify-center gap-2">
+              {sortedCategories.map(cat => (
+                <button
+                  key={cat}
+                  onClick$={() => selectedCategory.value = cat}
+                  class={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#7F2A7A] ${
+                    selectedCategory.value === cat 
+                      ? "bg-[#7F2A7A] text-white shadow-md scale-105" 
+                      : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:text-gray-900 active:scale-95"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
 
           {schedule.length === 0 ? (
             <div class="text-center text-gray-500 py-10">
@@ -63,48 +86,48 @@ export default component$(() => {
           ) : (
             <div class="mx-auto max-w-7xl">
               {/* Grid de Días (Único) */}
-              <div class="grid grid-cols-1 lg:grid-cols-4 gap-0 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
+              <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {dias.map((dia, idx) => {
-                  // Filter and sort classes for this specific day across ALL salons
-                  const clases = schedule
+                  // Filter and sort classes for this specific day and active category across ALL salons
+                  const clases = filteredSchedule
                     .filter((c) => c.dia_semana.toLowerCase() === dia.toLowerCase())
                     .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
 
                   return (
                     <div 
                       key={dia} 
-                      class={["flex flex-col p-4", idx < dias.length - 1 ? "lg:border-r border-gray-100" : "", "border-b lg:border-b-0 border-gray-100"].join(" ")}
+                      class="flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden"
                     >
-                      <div class="text-center mb-6">
-                        <h4 class="inline-block text-sm font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full">
+                      <div class="bg-gray-50 border-b border-gray-100 text-center py-4">
+                        <h4 class="inline-block text-sm font-bold uppercase tracking-widest text-[#7F2A7A]">
                           {dia}
                         </h4>
                       </div>
 
                       {clases.length === 0 ? (
-                        <div class="flex-1 flex flex-col items-center justify-center text-gray-300 py-4 text-sm font-medium">
+                        <div class="flex-1 flex flex-col items-center justify-center text-gray-300 py-8 text-sm font-medium">
                           - Sin clases -
                         </div>
                       ) : (
-                        <div class="space-y-4 flex-1">
+                        <div class="space-y-4 flex-1 p-4">
                           {clases.map((c) => (
-                            <div key={c.id} class={`group bg-white border shadow-sm hover:shadow-md rounded-xl p-4 flex flex-col transition-all duration-300 relative overflow-hidden ${c.salon === 1 ? 'border-indigo-100 hover:border-indigo-300' : 'border-purple-100 hover:border-purple-300'}`}>
+                            <div key={c.id} class={`group bg-white border shadow-sm hover:shadow-md rounded-xl p-5 flex flex-col transition-all duration-300 relative overflow-hidden ${c.salon === 1 ? 'border-indigo-100 hover:border-indigo-300' : 'border-purple-100 hover:border-purple-300'}`}>
                               {/* Pestaña de color decorativa según salón */}
                               <div class={`absolute left-0 top-0 bottom-0 w-1 opacity-50 group-hover:opacity-100 transition-opacity ${c.salon === 1 ? 'bg-indigo-400' : 'bg-purple-400'}`}></div>
                               
                               <div class="pl-2">
-                                <div class="flex flex-wrap gap-2 mb-2">
-                                  <div class="inline-block font-mono text-xs font-bold bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                <div class="flex flex-wrap gap-2 mb-3">
+                                  <div class="inline-block font-mono text-base font-semibold bg-gray-100 text-gray-800 px-2 py-1 rounded">
                                     {c.hora_inicio} a {c.hora_fin}
                                   </div>
-                                  <div class={`inline-block font-mono text-xs font-bold text-white px-2 py-1 rounded ${c.salon === 1 ? 'bg-indigo-600' : 'bg-purple-600'}`}>
+                                  <div class={`inline-block text-xs font-bold px-2 py-1 rounded-full ${c.salon === 1 ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'bg-purple-50 text-purple-700 border border-purple-100'}`}>
                                     Salón {c.salon}
                                   </div>
                                 </div>
-                                <h5 class="font-extrabold text-gray-900 text-base leading-tight mb-1">{c.categoria}</h5>
-                                <p class="text-indigo-600 font-semibold text-sm mb-3">{c.clase}</p>
+                                <h5 class="font-extrabold text-gray-900 text-lg leading-tight mb-2">{c.categoria}</h5>
+                                <p class="text-indigo-600 font-semibold text-base mb-4">{c.clase}</p>
                                 
-                                <div class="pt-3 border-t border-gray-50 flex items-center text-xs text-gray-500 font-medium">
+                                <div class="pt-3 border-t border-gray-50 flex items-center text-sm text-gray-600 font-medium">
                                   <span class="truncate">Prof: {c.profesores}</span>
                                 </div>
                               </div>
@@ -115,6 +138,24 @@ export default component$(() => {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Download Option Moved Here */}
+              <div class="mt-12 text-center w-full max-w-sm mx-auto">
+                {currentPdfUrl ? (
+                   <a 
+                     href={currentPdfUrl} 
+                     target="_blank" 
+                     rel="noopener noreferrer"
+                     class="flex items-center justify-center bg-[#7F2A7A] hover:bg-[#662061] text-white py-3 px-8 text-lg font-bold rounded-xl shadow-lg transition-all w-full active:scale-95"
+                   >
+                     <LuDownload class="mr-2 h-6 w-6" /> Descargar Cronograma
+                   </a>
+                ) : (
+                   <p class="text-base text-gray-500 font-medium bg-gray-100 py-3 px-6 rounded-xl border border-gray-200">
+                     Cronograma en PDF no disponible momentáneamente.
+                   </p>
+                )}
               </div>
             </div>
           )}
@@ -153,11 +194,9 @@ export default component$(() => {
         <div class="container mx-auto px-4 max-w-5xl">
           <div class="flex flex-col md:flex-row items-center gap-8 md:gap-12 bg-white/5 rounded-3xl p-8 backdrop-blur-sm border border-white/10 shadow-2xl">
             
-            {/* Box Logo Placeholder */}
-            <div class="w-32 h-32 bg-white/10 rounded-2xl border border-white/20 flex flex-col items-center justify-center shrink-0 shadow-inner">
-               <LuMusic class="h-10 w-10 text-white/50 mb-2" />
-               <span class="text-[10px] text-white/50 uppercase font-bold tracking-widest leading-tight text-center px-2">Logo aquí</span>
-               {/* Sube aquí la imagen del logo en el futuro */}
+            {/* Logo */}
+            <div class="w-32 h-32 bg-white/10 rounded-2xl border border-white/20 flex flex-col items-center justify-center shrink-0 shadow-inner overflow-hidden p-2">
+               <img src="/logo-ritmos-en-accion.webp" alt="Ritmos en Acción" class="w-full h-full object-contain" />
             </div>
 
             {/* Info */}
@@ -198,11 +237,11 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Danzas - Círculo Italiano",
+  title: _`dance.metaTitle`,
   meta: [
     {
       name: "description",
-      content: "Escuela de danzas del Círculo Italiano. Conocé nuestros profesores y horarios actualizados.",
+      content: _`dance.meta.pageContent`,
     },
   ],
 };

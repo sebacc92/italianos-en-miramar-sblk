@@ -74,6 +74,7 @@ export const MultiImageUploader = component$<MultiImageUploaderProps>(
     });
 
     const handleRemove$ = $((indexToRemove: number) => {
+      if (!window.confirm("¿Seguro que deseas remover esta imagen de la galería?")) return;
       const updatedUrls = previewUrls.value.filter((_, i) => i !== indexToRemove);
       previewUrls.value = updatedUrls;
       onUploadCompleted$(updatedUrls);

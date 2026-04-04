@@ -141,16 +141,21 @@ export type DanzaGaleria = InferSelectModel<typeof danzasGaleria>;
 // NUEVO MÓDULO: NUTRICIÓN
 // ==========================================
 
-export const nutricionProfesionales = sqliteTable("nutricion_profesionales", {
+export const nutricionConfig = sqliteTable("nutricion_config", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   nombre: text("nombre").notNull(),
-  descripcion_servicios: text("descripcion_servicios").notNull(),
+  descripcion: text("descripcion").notNull(),
+});
+
+export const nutricionHorarios = sqliteTable("nutricion_horarios", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   dia_semana: text("dia_semana").notNull(),
   hora_inicio: text("hora_inicio").notNull(),
   hora_fin: text("hora_fin").notNull(),
 });
 
-export type NutricionProfesional = InferSelectModel<typeof nutricionProfesionales>;
+export type NutricionConfig = InferSelectModel<typeof nutricionConfig>;
+export type NutricionHorario = InferSelectModel<typeof nutricionHorarios>;
 
 // ==========================================
 // NUEVO MÓDULO: ARTE

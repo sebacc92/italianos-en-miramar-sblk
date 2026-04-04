@@ -107,17 +107,21 @@ export const Services = component$(() => {
             </div>
           </Link>
 
-          {/* Card 5: Escuela de Danzas */}
+        {/* Card 5: Escuela de Danzas */}
           <Link href={`/${currentLocale}/danzas`} class="group">
-            <div class="relative h-full overflow-hidden rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-pink-200 hover:shadow-2xl">
-              <div class="absolute top-0 right-0 -mt-16 -mr-16 h-32 w-32 rounded-bl-full bg-pink-50 transition-transform group-hover:scale-110"></div>
+            <div class="relative h-full overflow-hidden rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-[#7F2A7A]/30 hover:shadow-2xl">
+              <div class="absolute top-0 right-0 -mt-16 -mr-16 h-32 w-32 rounded-bl-full bg-[#7F2A7A]/5 transition-transform group-hover:scale-110"></div>
               <div class="relative z-10">
-                <div class="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-pink-100 text-pink-600 transition-colors group-hover:bg-pink-600 group-hover:text-white">
-                  <LuMusic class="h-7 w-7" />
+                <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-xl bg-[#7F2A7A]/10 transition-colors group-hover:bg-[#7F2A7A]/20">
+                  <img
+                    src="/logo-ritmos-en-accion.webp"
+                    alt="Logo Ritmos en Acción"
+                    class="h-full w-full object-contain p-2"
+                  />
                 </div>
-                <h3 class="mb-3 text-xl font-bold text-gray-900 transition-colors group-hover:text-pink-700">{_`services.dance.title`}</h3>
+                <h3 class="mb-3 text-xl font-bold text-gray-900 transition-colors group-hover:text-[#662061]">{_`services.dance.title`}</h3>
                 <p class="mb-6 leading-relaxed text-gray-600">{_`services.dance.desc`}</p>
-                <span class="inline-flex items-center font-semibold text-pink-600 transition-transform group-hover:translate-x-1">
+                <span class="inline-flex items-center font-semibold text-[#7F2A7A] transition-transform group-hover:translate-x-1">
                   {_`services.dance.cta`} <LuArrowRight class="ml-2 h-4 w-4" />
                 </span>
               </div>

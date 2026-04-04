@@ -130,19 +130,19 @@ export default component$(() => {
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label class="mb-1 block text-sm font-semibold text-gray-700">Clase (Ej: Ritmos)</label>
-                    <Input name="clase" placeholder="Ej: Urbano" required />
+                    <Input name="clase" class="h-12 text-base" placeholder="Ej: Urbano" required />
                   </div>
                   <div>
                     <label class="mb-1 block text-sm font-semibold text-gray-700">Categoría</label>
-                    <Input name="categoria" placeholder="Ej: JUVENIL 3" required />
+                    <Input name="categoria" class="h-12 text-base" placeholder="Ej: JUVENIL 3" required />
                   </div>
                   <div class="sm:col-span-2">
                     <label class="mb-1 block text-sm font-semibold text-gray-700">Profesores</label>
-                    <Input name="profesores" placeholder="Ej: Candela, Paz" required />
+                    <Input name="profesores" class="h-12 text-base" placeholder="Ej: Candela, Paz" required />
                   </div>
                   <div>
                     <label class="mb-1 block text-sm font-semibold text-gray-700">Día de la Semana</label>
-                    <select name="dia_semana" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-50">
+                    <select name="dia_semana" required class="flex h-12 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-50">
                       <option value="Lunes">Lunes</option>
                       <option value="Martes">Martes</option>
                       <option value="Miércoles">Miércoles</option>
@@ -153,18 +153,18 @@ export default component$(() => {
                   </div>
                   <div>
                     <label class="mb-1 block text-sm font-semibold text-gray-700">Salón</label>
-                    <select name="salon" required class="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-50">
+                    <select name="salon" required class="flex h-12 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-50">
                       <option value="1">Salón 1</option>
                       <option value="2">Salón 2</option>
                     </select>
                   </div>
                   <div>
                     <label class="mb-1 block text-sm font-semibold text-gray-700">Hora Inicio</label>
-                    <Input type="time" name="hora_inicio" required />
+                    <Input type="time" name="hora_inicio" class="h-12 text-base" required />
                   </div>
                   <div>
                     <label class="mb-1 block text-sm font-semibold text-gray-700">Hora Fin</label>
-                    <Input type="time" name="hora_fin" required />
+                    <Input type="time" name="hora_fin" class="h-12 text-base" required />
                   </div>
                 </div>
                 <div class="flex justify-end gap-2">
@@ -186,26 +186,33 @@ export default component$(() => {
             </div>
           ) : (
             <div class="overflow-x-auto">
-              <table class="w-full text-left text-sm text-gray-600">
+              <table class="w-full text-left text-base text-gray-600">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500">
                   <tr>
-                    <th class="px-4 py-3 font-semibold">Clase / Cat.</th>
-                    <th class="px-4 py-3 font-semibold">Día / Hora</th>
-                    <th class="px-4 py-3 text-right font-semibold">Acciones</th>
+                    <th class="px-4 py-4 font-semibold">Clase / Cat.</th>
+                    <th class="px-4 py-4 font-semibold">Día / Hora</th>
+                    <th class="px-4 py-4 text-right font-semibold">Acciones</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                   {data.value.schedule.map((clase) => (
                     <tr key={clase.id} class="transition-colors hover:bg-gray-50">
-                      <td class="px-4 py-3">
+                      <td class="px-4 py-4">
                         <div class="font-bold text-gray-900">{clase.clase} - {clase.categoria}</div>
-                        <div class="text-xs text-gray-500">Prof: {clase.profesores}</div>
+                        <div class="text-sm text-gray-500 mt-1">Prof: {clase.profesores}</div>
                       </td>
-                      <td class="px-4 py-3">
-                        <div class="font-medium text-indigo-700">{clase.dia_semana} (S{clase.salon})</div>
-                        <div class="text-xs text-gray-500">{clase.hora_inicio} a {clase.hora_fin}</div>
+                      <td class="px-4 py-4">
+                        <div class="font-medium text-indigo-700 flex items-center">
+                          {clase.dia_semana} 
+                          {clase.salon === 1 ? (
+                            <span class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-0.5 rounded-md ml-2 inline-block">Salón 1</span>
+                          ) : (
+                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-md ml-2 inline-block">Salón 2</span>
+                          )}
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1">{clase.hora_inicio} a {clase.hora_fin}</div>
                       </td>
-                      <td class="px-4 py-3 text-right">
+                      <td class="px-4 py-4 text-right">
                         <div class="flex justify-end gap-2 text-gray-400">
                           <a
                             href={`/admin/danzas/${clase.id}/edit`}

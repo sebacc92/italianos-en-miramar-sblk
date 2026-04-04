@@ -96,7 +96,43 @@ export default component$(() => {
   
   const user = adminSession.value.user;
   const userEmail = typeof user?.username === 'string' ? user.username : 'Admin';
+  const userName = userEmail.toLowerCase();
   const accessDenied = adminSession.value.accessDenied;
+
+  const isDanzaNutriUser = userName === 'flor' || userName === 'martinap' || userName === 'martina';
+  const isArteUser = userName === 'natalia';
+
+  let currentNavLinks = [...navLinks];
+
+  if (isDanzaNutriUser) {
+    const nutriIndex = currentNavLinks.findIndex(l => l.href === '/admin/nutricion');
+    if (nutriIndex !== -1) {
+      const nutriLink = currentNavLinks.splice(nutriIndex, 1)[0];
+      currentNavLinks.unshift(nutriLink);
+    }
+    const danzasIndex = currentNavLinks.findIndex(l => l.href === '/admin/danzas');
+    if (danzasIndex !== -1) {
+      const danzasLink = currentNavLinks.splice(danzasIndex, 1)[0];
+      currentNavLinks.unshift(danzasLink);
+    }
+  } else if (isArteUser) {
+    const arteIndex = currentNavLinks.findIndex(l => l.href === '/admin/arte');
+    if (arteIndex !== -1) {
+      const arteLink = currentNavLinks.splice(arteIndex, 1)[0];
+      currentNavLinks.unshift(arteLink);
+    }
+  }
+
+  const displayLinks = currentNavLinks.map(link => {
+    let disabled = false;
+    if (isDanzaNutriUser && link.href !== '/admin/danzas' && link.href !== '/admin/nutricion' && link.href !== '/admin') {
+      disabled = true;
+    }
+    if (isArteUser && link.href !== '/admin/arte' && link.href !== '/admin') {
+      disabled = true;
+    }
+    return { ...link, disabled };
+  });
 
   return (
     <div class="flex min-h-screen bg-gray-50 font-sans">
@@ -119,12 +155,26 @@ export default component$(() => {
 
         {/* Navigation */}
         <nav class="flex-1 space-y-1 px-3 py-6">
-          {navLinks.map((link) => {
+          {displayLinks.map((link) => {
             const isActive =
               link.href === "/admin"
                 ? location.url.pathname === "/admin" ||
                 location.url.pathname === "/admin/"
                 : location.url.pathname.startsWith(link.href);
+
+            if (link.disabled) {
+              return (
+                <div
+                  key={link.href}
+                  class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 opacity-60 cursor-not-allowed"
+                  title="No tienes acceso a esta sección"
+                  aria-disabled="true"
+                >
+                  {link.icon}
+                  {link.label}
+                </div>
+              );
+            }
 
             return (
               <Link

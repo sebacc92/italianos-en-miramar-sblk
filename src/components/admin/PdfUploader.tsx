@@ -48,6 +48,7 @@ export const PdfUploader = component$<PdfUploaderProps>(
     });
 
     const handleRemove$ = $(() => {
+      if (!window.confirm("¿Seguro que deseas remover el documento actual?")) return;
       fileUrl.value = null;
       onUploadCompleted$(""); // "" denotes removal
     });
