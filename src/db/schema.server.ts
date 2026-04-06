@@ -145,6 +145,9 @@ export const nutricionConfig = sqliteTable("nutricion_config", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   nombre: text("nombre").notNull(),
   descripcion: text("descripcion").notNull(),
+  heroTitle: text("hero_title"),
+  heroDescription: text("hero_description"),
+  heroImageUrl: text("hero_image_url"),
 });
 
 export const nutricionHorarios = sqliteTable("nutricion_horarios", {

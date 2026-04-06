@@ -3,10 +3,11 @@ import { type DocumentHead, routeLoader$, routeAction$, z, zod$, Form } from "@b
 import { getDb } from "~/db/client.server";
 import { nutricionConfig, nutricionHorarios } from "~/db/schema.server";
 import { eq } from "drizzle-orm";
-import { LuPlus, LuTrash2, LuClock, LuUser, LuPencil } from "@qwikest/icons/lucide";
+import { LuPlus, LuTrash2, LuClock, LuUser, LuPencil, LuImage, LuSettings } from "@qwikest/icons/lucide";
 import { Button } from "~/components/ui/Button";
 import { Input } from "~/components/ui/Input";
 import { WysiwygEditor } from "~/components/admin/WysiwygEditor";
+import { ImageUploader } from "~/components/ui/ImageUploader";
 
 export const head: DocumentHead = {
   title: "Nutrición — Admin | Círculo Italiano",
@@ -23,21 +24,26 @@ export const useUpdateConfigAction = routeAction$(async (data, requestEvent) => 
   const db = getDb(requestEvent.env);
   const [existingConfig] = await db.select().from(nutricionConfig).limit(1);
   
+  const values = {
+    nombre: data.nombre,
+    descripcion: data.descripcion,
+    heroTitle: data.heroTitle || null,
+    heroDescription: data.heroDescription || null,
+    heroImageUrl: data.heroImageUrl || null,
+  };
+
   if (existingConfig) {
-    await db.update(nutricionConfig).set({
-      nombre: data.nombre,
-      descripcion: data.descripcion,
-    }).where(eq(nutricionConfig.id, existingConfig.id));
+    await db.update(nutricionConfig).set(values).where(eq(nutricionConfig.id, existingConfig.id));
   } else {
-    await db.insert(nutricionConfig).values({
-      nombre: data.nombre,
-      descripcion: data.descripcion,
-    });
+    await db.insert(nutricionConfig).values(values);
   }
   return { success: true };
 }, zod$({
   nombre: z.string().min(1, "El nombre es obligatorio"),
   descripcion: z.string().min(1, "La descripción es obligatoria"),
+  heroTitle: z.string().optional(),
+  heroDescription: z.string().optional(),
+  heroImageUrl: z.string().optional(),
 }));
 
 export const useCreateHorarioAction = routeAction$(async (data, requestEvent) => {
@@ -88,6 +94,7 @@ export default component$(() => {
   const deleteHorarioAction = useDeleteHorarioAction();
   const showAddHorarioForm = useSignal(false);
   const editingHorario = useSignal<any>(null);
+  const heroImageUrlSig = useSignal<string>(data.value.config?.heroImageUrl || "");
 
   return (
     <div class="space-y-8">
@@ -98,36 +105,74 @@ export default component$(() => {
         </p>
       </div>
 
-      {/* SECTION 1: PERFIL */}
+      {/* SECTION 1: CONFIGURACIÓN GENERAL Y HERO */}
       <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <div class="mb-6 flex items-center gap-3">
           <div class="rounded-lg bg-green-100 p-2 text-green-700">
-             <LuUser class="h-6 w-6" />
+             <LuSettings class="h-6 w-6" />
           </div>
-          <h2 class="text-xl font-bold text-gray-900">Perfil de la Profesional</h2>
+          <h2 class="text-xl font-bold text-gray-900">Configuración General y Hero</h2>
         </div>
 
         {updateConfigAction.value?.success && (
           <div class="mb-6 rounded-md border border-green-200 bg-green-50 p-4 text-green-800">
-           Perfil actualizado con éxito.
+            Configuración actualizada con éxito.
           </div>
         )}
 
-        <Form action={updateConfigAction} class="space-y-6">
-          <div>
-            <label class="mb-1 block text-sm font-semibold text-gray-700">Nombre de la Profesional</label>
-            <Input name="nombre" value={data.value.config?.nombre || ""} placeholder="Ej: Lic. María Silva" required />
-          </div>
-          
-          <div>
-            <label class="mb-1 block text-sm font-semibold text-gray-700">Descripción y Servicios</label>
-            <p class="mb-2 text-xs text-gray-500">Esta presentación la verán los pacientes en la sección web.</p>
-            <WysiwygEditor name="descripcion" value={data.value.config?.descripcion || ""} />
+        <Form action={updateConfigAction} class="space-y-8">
+          <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            {/* Perfil */}
+            <div class="space-y-6">
+              <div class="flex items-center gap-2 text-green-800 font-bold border-b border-green-50 pb-2">
+                <LuUser class="h-5 w-5" />
+                <h3>Perfil Profesional</h3>
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-semibold text-gray-700">Nombre de la Profesional</label>
+                <Input name="nombre" value={data.value.config?.nombre || ""} placeholder="Ej: Lic. María Silva" required />
+              </div>
+              
+              <div>
+                <label class="mb-1 block text-sm font-semibold text-gray-700">Descripción y Servicios</label>
+                <p class="mb-2 text-xs text-gray-500">Esta presentación la verán los pacientes en la sección inferior.</p>
+                <WysiwygEditor name="descripcion" value={data.value.config?.descripcion || ""} />
+              </div>
+            </div>
+
+            {/* Hero y Foto */}
+            <div class="space-y-6">
+              <div class="flex items-center gap-2 text-indigo-800 font-bold border-b border-indigo-50 pb-2">
+                <LuImage class="h-5 w-5" />
+                <h3>Configuración Visual (Hero y Foto)</h3>
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-semibold text-gray-700">Título del Banner</label>
+                <Input name="heroTitle" value={data.value.config?.heroTitle || ""} placeholder="Ej: Gabinete de Nutrición" />
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-semibold text-gray-700">Descripción del Banner</label>
+                <Input name="heroDescription" value={data.value.config?.heroDescription || ""} placeholder="Ej: Atención profesional..." />
+              </div>
+              <div class="pt-2">
+                <input type="hidden" name="heroImageUrl" value={heroImageUrlSig.value} />
+                <ImageUploader
+                  label="Foto de Perfil Profesional"
+                  currentImageUrl={data.value.config?.heroImageUrl || undefined}
+                  onUploadCompleted$={(url) => {
+                    heroImageUrlSig.value = url;
+                  }}
+                />
+                <p class="mt-2 text-xs text-gray-400 italic">
+                  Esta foto se mostrará en formato circular arriba del nombre de la profesional.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div class="flex justify-end border-t border-gray-100 pt-4">
-             <Button type="submit" disabled={updateConfigAction.isRunning}>
-                {updateConfigAction.isRunning ? "Guardando..." : "Guardar Perfil"}
+          <div class="flex justify-end border-t border-gray-100 pt-6">
+             <Button type="submit" disabled={updateConfigAction.isRunning} class="min-w-[200px]">
+                {updateConfigAction.isRunning ? "Guardando..." : "Guardar Cambios"}
              </Button>
           </div>
         </Form>
