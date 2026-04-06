@@ -243,5 +243,31 @@ export const head: DocumentHead = {
       name: "description",
       content: _`dance.meta.pageContent`,
     },
+    {
+      property: "og:title",
+      content: _`dance.metaTitle`,
+    },
+    {
+      property: "og:description",
+      content: _`dance.meta.pageContent`,
+    },
+    {
+      property: "og:image",
+      content: "/logo-ritmos-en-accion.webp",
+    },
+    {
+      property: "og:type",
+      content: "website",
+    },
+  ],
+  links: [
+    {
+      rel: "icon",
+      href: "/logo-ritmos-en-accion.webp",
+    },
+    {
+      rel: "shortcut icon",
+      href: "/logo-ritmos-en-accion.webp",
+    },
   ],
 };
