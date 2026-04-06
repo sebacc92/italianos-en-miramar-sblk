@@ -203,6 +203,8 @@ export type Ciudadania = InferSelectModel<typeof ciudadania>;
 export const danzasConfig = sqliteTable("danzas_config", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   pdf_url: text("pdf_url").notNull(),
+  heroTitle: text("hero_title"),
+  heroDescription: text("hero_description"),
 });
 
 export type DanzasConfig = InferSelectModel<typeof danzasConfig>;

@@ -14,15 +14,16 @@ export const useDanzasData = routeLoader$(async (requestEvent) => {
   const gallery = galleryRaw.map(({ createdAt, ...rest }) => rest);
   
   const configRaw = await db.select().from(danzasConfig).limit(1);
-  const currentPdfUrl = configRaw.length > 0 ? configRaw[0].pdf_url : null;
+  const config = configRaw.length > 0 ? configRaw[0] : null;
   
-  return { schedule, gallery, currentPdfUrl };
+  return { schedule, gallery, config };
 });
 
 export default component$(() => {
   const data = useDanzasData();
   const schedule = data.value.schedule;
-  const currentPdfUrl = data.value.currentPdfUrl;
+  const config = data.value.config;
+  const currentPdfUrl = config?.pdf_url;
 
   const selectedCategory = useSignal("Todas");
   
@@ -47,10 +48,10 @@ export default component$(() => {
               alt="Ritmos en Acción" 
               class="h-32 md:h-48 mb-6 object-contain drop-shadow-2xl" 
             />
-            <span>Ritmos en Acción</span>
+            <span>{config?.heroTitle || "Ritmos en Acción"}</span>
           </div>
         }
-        description={_`dance.hero.pageDescription`}
+        description={config?.heroDescription || _`dance.hero.pageDescription`}
       />
 
       {/* Schedule Grid */}

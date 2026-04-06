@@ -20,9 +20,9 @@ export const useDanzasLoader = routeLoader$(async (requestEvent) => {
   const galleryUrls = galleryRaw.map((g) => g.imageUrl);
   
   const configRaw = await db.select().from(danzasConfig).limit(1);
-  const currentPdfUrl = configRaw.length > 0 ? configRaw[0].pdf_url : null;
+  const config = configRaw.length > 0 ? configRaw[0] : null;
   
-  return { schedule, galleryUrls, currentPdfUrl };
+  return { schedule, galleryUrls, config };
 });
 
 export const useCreateClassAction = routeAction$(async (data, requestEvent) => {
@@ -77,23 +77,38 @@ export const useUpdateGalleryAction = routeAction$(async (data, requestEvent) =>
   return { success: true };
 });
 
-export const useUpdatePdfAction = routeAction$(async (data, requestEvent) => {
+export const useUpdateConfigAction = routeAction$(async (data, requestEvent) => {
   const db = getDb(requestEvent.env);
-  const url = String(data.url || "");
+  const [existingConfig] = await db.select().from(danzasConfig).limit(1);
   
-  await db.delete(danzasConfig);
-  if (url) {
-    await db.insert(danzasConfig).values({ pdf_url: url });
+  const values = {
+    pdf_url: data.pdf_url || (existingConfig?.pdf_url || ""),
+    heroTitle: data.heroTitle || null,
+    heroDescription: data.heroDescription || null,
+  };
+
+  if (existingConfig) {
+    await db.update(danzasConfig).set(values).where(eq(danzasConfig.id, existingConfig.id));
+  } else {
+    // If no existing config, and no pdf_url provided, we need a default empty string for pdf_url as it might be NOT NULL
+    await db.insert(danzasConfig).values({
+      ...values,
+      pdf_url: values.pdf_url || ""
+    });
   }
   return { success: true };
-});
+}, zod$({
+  pdf_url: z.string().optional(),
+  heroTitle: z.string().optional(),
+  heroDescription: z.string().optional(),
+}));
 
 export default component$(() => {
   const data = useDanzasLoader();
   const createAction = useCreateClassAction();
   const deleteAction = useDeleteClassAction();
   const updateGalleryAction = useUpdateGalleryAction();
-  const updatePdfAction = useUpdatePdfAction();
+  const updateConfigAction = useUpdateConfigAction();
   
   const showAddForm = useSignal(false);
 
@@ -248,20 +263,47 @@ export default component$(() => {
 
         {/* Media & Config Section */}
         <div class="space-y-8">
+          <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2 2.01 2.01 0 0 1-2.01 2.01 2 2 0 0 0-2 2 2.01 2.01 0 0 1-2.01 2.01 2 2 0 0 0-2 2v.44a2 2 0 0 0 2 2 2.01 2.01 0 0 1 2.01 2.01 2 2 0 0 0 2 2 2.01 2.01 0 0 1 2.01 2.01 2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2 2.01 2.01 0 0 1 2.01-2.01 2 2 0 0 0 2-2 2.01 2.01 0 0 1 2.01-2.01 2 2 0 0 0 2-2v-.44a2 2 0 0 0-2-2 2.01 2.01 0 0 1-2.01-2.01 2 2 0 0 0-2-2 2.01 2.01 0 0 1-2.01-2.01 2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              Configuración Web
+            </h3>
+            
+            <Form action={updateConfigAction} class="space-y-6">
+              <div>
+                <label class="mb-1 block text-sm font-semibold text-gray-700">Título del Banner (Hero)</label>
+                <Input name="heroTitle" value={data.value.config?.heroTitle || ""} placeholder="Ej: Ritmos en Acción" />
+              </div>
+              
+              <div>
+                <label class="mb-1 block text-sm font-semibold text-gray-700">Descripción del Banner</label>
+                <Input name="heroDescription" value={data.value.config?.heroDescription || ""} placeholder="Breve descripción para el banner..." />
+              </div>
+
+              <div class="pt-4 border-t border-gray-100 flex justify-end">
+                <Button type="submit" disabled={updateConfigAction.isRunning}>
+                  {updateConfigAction.isRunning ? "Guardando..." : "Guardar Textos"}
+                </Button>
+              </div>
+            </Form>
+
+            <div class="mt-8 pt-8 border-t border-gray-100">
+               <PdfUploader
+                  label="Subir cronograma (PDF)"
+                  currentFileUrl={data.value.config?.pdf_url || null}
+                  onUploadCompleted$={async (url) => {
+                    updateConfigAction.submit({ pdf_url: url });
+                  }}
+                />
+            </div>
+          </div>
+
           <MultiImageUploader
             currentImageUrls={data.value.galleryUrls}
             maxFiles={12}
             label="Galería de Fotos (Máx 12)"
             onUploadCompleted$={async (urls) => {
               updateGalleryAction.submit({ urls: JSON.stringify(urls) });
-            }}
-          />
-
-          <PdfUploader
-            label="Subir cronograma (PDF)"
-            currentFileUrl={data.value.currentPdfUrl}
-            onUploadCompleted$={async (url) => {
-              updatePdfAction.submit({ url });
             }}
           />
         </div>
