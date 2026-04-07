@@ -26,14 +26,65 @@ export default component$(() => {
   const currentPdfUrl = config?.pdf_url;
 
   const selectedCategory = useSignal("Todas");
+  const selectedTeacher = useSignal("Todos");
   
   // Extract unique categories and group them alphabetically
   const uniqueCategories = Array.from(new Set(schedule.map(c => c.categoria))).sort();
   const sortedCategories = ["Todas", ...uniqueCategories];
 
-  const filteredSchedule = selectedCategory.value === "Todas" 
-    ? schedule 
-    : schedule.filter(c => c.categoria === selectedCategory.value);
+  // Extract unique teachers, handling multiple teachers per class (separated by comma or "y")
+  // Special rules: Exclude Dai, Ro. Combine Diego & Nico.
+  const uniqueTeachers = Array.from(new Set(
+    schedule.flatMap(c => {
+      const raw = c.profesores;
+      const lowered = raw.toLowerCase();
+      
+      // Determine if this class has both Diego and Nico
+      const isDiegoAndNico = 
+        lowered.includes("diego y nico") || 
+        lowered.includes("nico y diego") ||
+        (lowered.includes("diego") && lowered.includes("nico"));
+      
+      // Standardize and split to get individual names, then filter out the special ones
+      const individualNames = raw
+        .replace(/\s+y\s+/g, ', ')
+        .split(',')
+        .map(p => p.trim())
+        .filter(p => p && !["Dai", "Ro", "Diego", "Nico"].includes(p));
+      
+      if (isDiegoAndNico) {
+        individualNames.push("Diego y Nico");
+      }
+      
+      return individualNames;
+    })
+  )).sort();
+  const sortedTeachers = ["Todos", ...uniqueTeachers];
+
+  const filteredSchedule = schedule.filter(c => {
+    const matchesCategory = selectedCategory.value === "Todas" || c.categoria === selectedCategory.value;
+    
+    const raw = c.profesores;
+    const lowered = raw.toLowerCase();
+    
+    if (selectedTeacher.value === "Todos") return matchesCategory;
+    
+    // Custom logic for "Diego y Nico" filter
+    if (selectedTeacher.value === "Diego y Nico") {
+      const match = lowered.includes("diego y nico") || 
+                    lowered.includes("nico y diego") ||
+                    (lowered.includes("diego") && lowered.includes("nico"));
+      return matchesCategory && match;
+    }
+
+    // Standard logic for other teachers
+    const classTeachers = raw
+      .replace(/\s+y\s+/g, ', ')
+      .split(',')
+      .map(p => p.trim());
+    
+    return matchesCategory && classTeachers.includes(selectedTeacher.value);
+  });
 
   const dias = ["Lunes", "Martes", "Miércoles", "Jueves"];
 
@@ -63,20 +114,60 @@ export default component$(() => {
           </div>
           
           {schedule.length > 0 && (
-            <div class="mb-10 flex flex-wrap items-center justify-center gap-2">
-              {sortedCategories.map(cat => (
-                <button
-                  key={cat}
-                  onClick$={() => selectedCategory.value = cat}
-                  class={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#7F2A7A] ${
-                    selectedCategory.value === cat 
-                      ? "bg-[#7F2A7A] text-white shadow-md scale-105" 
-                      : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:text-gray-900 active:scale-95"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+            <div class="mb-12 space-y-6">
+              {/* Categorías */}
+              <div class="flex flex-col items-center">
+                <span class="text-xs font-bold uppercase tracking-widest text-[#7F2A7A]/60 mb-3">Filtrar por Categoría</span>
+                <div class="flex flex-wrap items-center justify-center gap-2 max-w-6xl mx-auto">
+                  {sortedCategories.map(cat => (
+                    <button
+                      key={cat}
+                      onClick$={() => selectedCategory.value = cat}
+                      class={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 outline-none ${
+                        selectedCategory.value === cat 
+                          ? "bg-[#7F2A7A] text-white shadow-md scale-105" 
+                          : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:text-gray-900 active:scale-95"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Profesores */}
+              <div class="flex flex-col items-center">
+                <span class="text-xs font-bold uppercase tracking-widest text-indigo-900/40 mb-3">Filtrar por Profesor</span>
+                <div class="flex flex-wrap items-center justify-center gap-2 max-w-6xl mx-auto">
+                  {sortedTeachers.map(prof => (
+                    <button
+                      key={prof}
+                      onClick$={() => selectedTeacher.value = prof}
+                      class={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 outline-none ${
+                        selectedTeacher.value === prof 
+                          ? "bg-indigo-600 text-white shadow-md scale-105" 
+                          : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:text-gray-900 active:scale-95"
+                      }`}
+                    >
+                      {prof}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(selectedCategory.value !== "Todas" || selectedTeacher.value !== "Todos") && (
+                <div class="flex justify-center pt-2">
+                  <button 
+                    onClick$={() => {
+                      selectedCategory.value = "Todas";
+                      selectedTeacher.value = "Todos";
+                    }}
+                    class="text-xs font-black uppercase tracking-widest text-red-500 hover:text-red-700 transition-colors"
+                  >
+                    Limpiar Filtros
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
