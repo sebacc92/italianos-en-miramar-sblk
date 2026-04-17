@@ -65,7 +65,7 @@ export const Chatbot = component$(() => {
       }
 
       const data = await response.json();
-      
+
       if (data.reply) {
         state.messages.push(data.reply);
       } else {
@@ -95,15 +95,15 @@ export const Chatbot = component$(() => {
         onClick$={() => (state.isOpen = !state.isOpen)}
         class={[
           "fixed z-40 p-3 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center cursor-pointer focus:ring-2 focus:ring-[#009246] focus:outline-none",
-          state.isOpen 
-            ? "bg-slate-700 text-white w-12 h-12 bottom-6 right-6 border border-slate-600" 
-            : "bg-gradient-to-br from-[#009246] via-slate-50 to-[#CE2B37] text-slate-900 w-14 h-14 sm:w-16 sm:h-16 bottom-6 right-6 border-2 border-white shadow-[0_0_15px_rgba(0,146,70,0.5)] hover:shadow-[0_0_25px_rgba(206,43,55,0.5)]" 
+          state.isOpen
+            ? "bg-slate-700 text-white w-12 h-12 bottom-6 right-6 border border-slate-600"
+            : "bg-gradient-to-br from-[#009246] via-slate-50 to-[#CE2B37] text-slate-900 w-14 h-14 sm:w-16 sm:h-16 bottom-6 right-6 border-2 border-white shadow-[0_0_15px_rgba(0,146,70,0.5)] hover:shadow-[0_0_25px_rgba(206,43,55,0.5)]"
         ]}
         aria-label="Abrir asistente virtual del Círculo Italiano"
         style={{ contain: "layout paint" }}
       >
         {state.isOpen ? (
-           <LuX class="w-6 h-6" />
+          <LuX class="w-6 h-6" />
         ) : (
           <LuMessageCircle class="w-7 h-7 sm:w-8 sm:h-8" />
         )}
@@ -111,36 +111,36 @@ export const Chatbot = component$(() => {
 
       {state.isOpen && (
         <div class="fixed z-50 bottom-24 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-80 h-[28rem] bg-white shadow-2xl rounded-2xl flex flex-col overflow-hidden border border-slate-200 animate-in fade-in slide-in-from-bottom-5 duration-300">
-          
+
           {/* Header */}
           <div class="bg-gradient-to-r from-[#009246] to-[#CE2B37] text-white p-4 flex items-center gap-3">
-             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20">
-               <LuBot class="h-6 w-6 text-white" />
-             </div>
-             <div>
-               <h3 class="font-semibold text-sm">Asistente Circolo</h3>
-               <p class="text-[11px] text-green-100 flex items-center gap-1">
-                 <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse block"></span>
-                 En línea
-               </p>
-             </div>
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20">
+              <LuBot class="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 class="font-semibold text-sm">Asistente virtual</h3>
+              <p class="text-[11px] text-green-100 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse block"></span>
+                En línea
+              </p>
+            </div>
           </div>
 
           {/* Messages Area */}
-          <div 
+          <div
             ref={messagesContainerRef}
             class="flex-1 p-4 overflow-y-auto space-y-4 flex flex-col bg-slate-50 relative"
           >
             {state.messages.map((msg, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 class={["flex", msg.role === 'user' ? "justify-end" : "justify-start"]}
               >
-                <div 
+                <div
                   class={[
                     "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm leading-relaxed",
-                    msg.role === 'user' 
-                      ? "bg-primary text-white rounded-br-none" 
+                    msg.role === 'user'
+                      ? "bg-primary text-white rounded-br-none"
                       : "bg-white border border-slate-200 text-slate-800 rounded-bl-none"
                   ]}
                 >
@@ -148,7 +148,7 @@ export const Chatbot = component$(() => {
                 </div>
               </div>
             ))}
-            
+
             {state.isLoading && (
               <div class="flex justify-start">
                 <div class="bg-white border border-slate-200 text-slate-400 rounded-2xl rounded-bl-none px-4 py-3 text-sm shadow-sm flex items-center gap-1.5">
@@ -162,7 +162,7 @@ export const Chatbot = component$(() => {
 
           {/* Input Area */}
           <div class="p-3 bg-white border-t border-slate-100">
-            <form 
+            <form
               preventdefault:submit
               onSubmit$={sendMessage}
               class="flex gap-2 relative"
