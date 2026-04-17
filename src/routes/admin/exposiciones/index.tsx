@@ -111,33 +111,34 @@ export default component$(() => {
           </div>
         ) : (
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-600">
+            {/* Desktop Table */}
+            <table class="hidden w-full text-left text-sm text-gray-600 md:table">
               <thead class="bg-gray-50 text-xs uppercase text-gray-500">
                 <tr>
-                  <th class="px-4 py-3 font-semibold">Exposición</th>
-                  <th class="px-4 py-3 font-semibold">Inauguración</th>
-                  <th class="px-4 py-3 font-semibold">Contacto</th>
-                  <th class="px-4 py-3 text-right font-semibold">Acciones</th>
+                  <th class="px-4 py-4 font-semibold">Exposición</th>
+                  <th class="px-4 py-4 font-semibold">Inauguración</th>
+                  <th class="px-4 py-4 font-semibold">Contacto</th>
+                  <th class="px-4 py-4 text-right font-semibold">Acciones</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200">
                 {data.value.map((expo) => (
                   <tr key={expo.id} class="transition-colors hover:bg-gray-50">
-                    <td class="px-4 py-3">
+                    <td class="px-4 py-4">
                       <div class="font-bold text-gray-900">{expo.titulo}</div>
                       <div class="text-xs text-gray-500">Artista: {expo.nombre_artista}</div>
                     </td>
-                    <td class="px-4 py-3">
+                    <td class="px-4 py-4">
                       {expo.fecha_inauguracion}
                     </td>
-                    <td class="px-4 py-3">
+                    <td class="px-4 py-4">
                       <div class="text-xs">{expo.contacto_artista}</div>
                     </td>
-                    <td class="px-4 py-3 text-right">
+                    <td class="px-4 py-4 text-right">
                       <div class="flex justify-end gap-2 text-gray-400">
                         <a
                           href={`/admin/exposiciones/${expo.id}`}
-                          class="inline-block rounded-md bg-indigo-50 p-1.5 text-indigo-600 transition-colors hover:bg-indigo-100 hover:text-indigo-900"
+                          class="inline-block rounded-md bg-indigo-50 p-2 text-indigo-600 transition-colors hover:bg-indigo-100 hover:text-indigo-900 shadow-sm"
                           title="Gestionar Obras (Galería)"
                         >
                           <LuImagePlus class="h-4 w-4" />
@@ -151,7 +152,7 @@ export default component$(() => {
                           <input type="hidden" name="id" value={expo.id} />
                           <button
                             type="submit"
-                            class="rounded-md p-1.5 transition-colors hover:bg-red-50 hover:text-red-600"
+                            class="rounded-md p-2 transition-colors hover:bg-red-50 hover:text-red-600"
                             title="Eliminar exposición"
                           >
                             <LuTrash2 class="h-4 w-4" />
@@ -163,6 +164,50 @@ export default component$(() => {
                 ))}
               </tbody>
             </table>
+
+            {/* Mobile Cards */}
+            <div class="grid grid-cols-1 divide-y divide-gray-100 md:hidden">
+              {data.value.map((expo) => (
+                <div key={expo.id} class="p-4 space-y-3">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="min-w-0 flex-1">
+                      <h4 class="font-bold text-gray-900 leading-tight">{expo.titulo}</h4>
+                      <p class="mt-0.5 text-xs text-green-600 font-medium">Artista: {expo.nombre_artista}</p>
+                      <div class="mt-2 flex flex-col gap-1 text-[11px] text-gray-500">
+                        <div class="flex items-center gap-1.5 underline decoration-gray-200 underline-offset-2">
+                           {expo.fecha_inauguracion}
+                        </div>
+                        <div class="text-gray-400 italic">{expo.contacto_artista}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 pt-2">
+                    <a
+                      href={`/admin/exposiciones/${expo.id}`}
+                      class="flex flex-2 items-center justify-center gap-2 rounded-lg bg-indigo-50 py-2.5 text-xs font-bold text-indigo-600 active:bg-indigo-100"
+                    >
+                      <LuImagePlus class="h-4 w-4" />
+                      Gestionar Obras
+                    </a>
+                    <Form
+                      action={deleteAction}
+                      class="flex flex-1"
+                      onSubmit$={(e: Event) => {
+                        if (!window.confirm("¿Seguro que deseas eliminar esta exposición? (Se borrarán todas sus obras)")) e.preventDefault();
+                      }}
+                    >
+                      <input type="hidden" name="id" value={expo.id} />
+                      <button
+                        type="submit"
+                        class="flex w-full items-center justify-center rounded-lg bg-red-50 py-2.5 text-xs font-bold text-red-600 active:bg-red-100"
+                      >
+                        <LuTrash2 class="h-4 w-4" />
+                      </button>
+                    </Form>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

@@ -24,7 +24,7 @@ export const EventForm = component$<EventFormProps>(({ action, event }) => {
   }
 
   return (
-    <div class="max-w-3xl rounded-xl border border-gray-200 bg-white p-8">
+    <div class="max-w-3xl rounded-xl border border-gray-200 bg-white p-4 sm:p-8 shadow-sm">
       {action.value?.message && !action.value.success && (
         <div class="mb-6 rounded-md border border-red-200 bg-red-50 p-4 text-red-700">
           {String(action.value.message)}

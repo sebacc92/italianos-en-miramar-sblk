@@ -97,7 +97,8 @@ export default component$(() => {
           </div>
         ) : (
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-600">
+            {/* Desktop Table */}
+            <table class="hidden w-full text-left text-sm text-gray-600 md:table">
               <thead class="bg-gray-50 text-xs uppercase text-gray-500">
                 <tr>
                   <th class="px-4 py-3 font-semibold">Autoridad</th>
@@ -140,6 +141,42 @@ export default component$(() => {
                 ))}
               </tbody>
             </table>
+
+            {/* Mobile Cards */}
+            <div class="grid grid-cols-1 divide-y divide-gray-100 md:hidden">
+              {data.value.map((auth) => (
+                <div key={auth.id} class="p-4 space-y-3">
+                  <div class="flex items-center justify-between gap-4">
+                     <div class="min-w-0">
+                       <h4 class="font-bold text-gray-900">{auth.nombre}</h4>
+                       <p class="text-xs text-gray-500 uppercase tracking-wider">{auth.cargo}</p>
+                     </div>
+                     <div class="flex shrink-0 gap-2">
+                        <a
+                          href={`/admin/autoridades/${auth.id}/edit`}
+                          class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-gray-600 active:bg-gray-100"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+                        </a>
+                        <Form
+                          action={deleteAction}
+                          onSubmit$={(e: Event) => {
+                            if (!window.confirm("¿Seguro de remover a este integrante?")) e.preventDefault();
+                          }}
+                        >
+                          <input type="hidden" name="id" value={auth.id} />
+                          <button
+                            type="submit"
+                            class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600 active:bg-red-100"
+                          >
+                            <LuTrash2 class="h-4 w-4" />
+                          </button>
+                        </Form>
+                     </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

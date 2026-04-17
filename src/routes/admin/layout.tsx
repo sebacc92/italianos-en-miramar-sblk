@@ -1,4 +1,4 @@
-import { component$, Slot } from "@builder.io/qwik";
+import { component$, Slot, useSignal } from "@builder.io/qwik";
 import { Link, useLocation, routeLoader$ } from "@builder.io/qwik-city";
 import {
   LuLayoutDashboard,
@@ -11,7 +11,11 @@ import {
   LuApple,
   LuPalette,
   LuLogOut,
-  LuTerminal
+  LuTerminal,
+  LuMenu,
+  LuX,
+  LuBot,
+  LuMessageSquare
 } from "@qwikest/icons/lucide";
 
 const navLinks = [
@@ -61,6 +65,16 @@ const navLinks = [
     label: "Taller de arte",
     icon: <LuPalette class="h-5 w-5" />,
   },
+  {
+    href: "/admin/ai/settings",
+    label: "Ajustes del Asistente",
+    icon: <LuBot class="h-5 w-5" />,
+  },
+  {
+    href: "/admin/ai/chats",
+    label: "Auditoría de IA",
+    icon: <LuMessageSquare class="h-5 w-5" />,
+  },
 ];
 
 const AccessDenied = component$(() => {
@@ -87,6 +101,7 @@ export const useAdminSession = routeLoader$((requestEvent) => {
 export default component$(() => {
   const location = useLocation();
   const adminSession = useAdminSession();
+  const isSidebarOpen = useSignal(false);
 
   const isLoginPage = location.url.pathname.startsWith("/admin/login");
 
@@ -136,21 +151,42 @@ export default component$(() => {
 
   return (
     <div class="flex min-h-screen bg-gray-50 font-sans">
+      {/* Backdrop */}
+      {isSidebarOpen.value && (
+        <div 
+          class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity lg:hidden"
+          onClick$={() => isSidebarOpen.value = false}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside class="fixed left-0 top-0 z-40 flex min-h-screen w-64 flex-col bg-gray-900 text-white shadow-2xl">
+      <aside 
+        class={[
+          "fixed left-0 top-0 z-50 flex min-h-screen w-64 flex-col bg-gray-900 text-white shadow-2xl transition-transform duration-300 lg:translate-x-0",
+          isSidebarOpen.value ? "translate-x-0" : "-translate-x-full"
+        ]}
+      >
         {/* Brand */}
-        <div class="flex items-center gap-3 border-b border-white/10 px-6 py-5">
-          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-600">
-            <span class="text-xs font-black text-white">CI</span>
+        <div class="flex items-center justify-between border-b border-white/10 px-6 py-5">
+          <div class="flex items-center gap-3">
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-600">
+              <span class="text-xs font-black text-white">CI</span>
+            </div>
+            <div>
+              <p class="h-4 text-xs font-bold uppercase leading-none tracking-widest text-green-500">
+                Admin
+              </p>
+              <p class="text-sm font-semibold leading-tight text-white">
+                Panel
+              </p>
+            </div>
           </div>
-          <div>
-            <p class="h-4 text-xs font-bold uppercase leading-none tracking-widest text-green-500">
-              Admin
-            </p>
-            <p class="text-sm font-semibold leading-tight text-white">
-              Panel
-            </p>
-          </div>
+          <button 
+            onClick$={() => isSidebarOpen.value = false}
+            class="rounded-lg p-1 text-gray-400 hover:bg-white/10 hover:text-white lg:hidden"
+          >
+            <LuX class="h-5 w-5" />
+          </button>
         </div>
 
         {/* Navigation */}
@@ -180,6 +216,7 @@ export default component$(() => {
               <Link
                 key={link.href}
                 href={link.href}
+                onClick$={() => isSidebarOpen.value = false}
                 class={[
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                   isActive
@@ -197,6 +234,7 @@ export default component$(() => {
             <div class="pt-4 mt-4 border-t border-white/10">
               <Link
                 href="/admin/cleverisma"
+                onClick$={() => isSidebarOpen.value = false}
                 class={[
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                   location.url.pathname.startsWith("/admin/cleverisma")
@@ -225,31 +263,41 @@ export default component$(() => {
       </aside>
 
       {/* Main content area */}
-      <main class="ml-64 flex-1 min-h-screen">
+      <main class="flex-1 min-h-screen transition-all duration-300 lg:ml-64">
         {/* Top bar */}
-        <header class="sticky top-0 z-30 flex items-center justify-between border-b border-gray-200 bg-white px-8 py-4">
-          <nav class="flex items-center gap-2 text-sm text-gray-500">
-            <span class="text-gray-400">Panel</span>
-            <span>/</span>
-            <span class="font-medium capitalize text-gray-700">
-              {location.url.pathname.replace("/admin", "").replace(/\//g, "") ||
-                "Dashboard"}
-            </span>
-          </nav>
-          <div class="flex items-center gap-2">
-            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900">
-              <span class="text-xs font-bold uppercase text-green-500">
+        <header class="sticky top-0 z-30 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-4 md:px-8">
+          <div class="flex items-center gap-4">
+            <button
+               onClick$={() => isSidebarOpen.value = !isSidebarOpen.value}
+               class="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 lg:hidden"
+               aria-label="Abrir menú"
+             >
+               <LuMenu class="h-6 w-6" />
+             </button>
+            <nav class="hidden items-center gap-2 text-sm text-gray-500 sm:flex">
+              <span class="text-gray-400">Panel</span>
+              <span>/</span>
+              <span class="font-medium capitalize text-gray-700">
+                {location.url.pathname.replace("/admin", "").replace(/\//g, "") ||
+                  "Dashboard"}
+              </span>
+            </nav>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="hidden flex-col items-end sm:flex">
+              <span class="text-xs font-bold uppercase tracking-wider text-green-600">Admin</span>
+              <span class="text-sm font-medium text-gray-700 capitalize">{userEmail.split("@")[0]}</span>
+            </div>
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-900 shadow-lg shadow-gray-900/10 transition-transform hover:scale-105 active:scale-95">
+              <span class="text-sm font-bold uppercase text-green-500">
                 {userEmail.charAt(0)}
               </span>
             </div>
-            <span class="text-sm font-medium capitalize text-gray-700">
-              {userEmail.split("@")[0]}
-            </span>
           </div>
         </header>
 
         {/* Page content */}
-        <div class="p-8">
+        <div class="p-4 md:p-8">
           {accessDenied ? <AccessDenied /> : <Slot />}
         </div>
       </main>

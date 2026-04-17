@@ -233,3 +233,35 @@ export const exposicionesObras = sqliteTable("exposiciones_obras", {
 });
 
 export type ExposicionObra = InferSelectModel<typeof exposicionesObras>;
+
+// ==========================================
+// CONFIGURACIÓN E IA CHATBOT
+// ==========================================
+export const siteSettings = sqliteTable("site_settings", {
+  id: text("id").primaryKey(), // Siempre será "1"
+  aiEnabled: integer("ai_enabled", { mode: "boolean" }).default(false),
+  whatsappNumber: text("whatsapp_number"),
+  aiKnowledge: text("ai_knowledge"),
+  aiCallToAction: text("ai_cta"),
+  aiTone: text("ai_tone").default("Amigable y profesional"),
+});
+
+export type SiteSettings = InferSelectModel<typeof siteSettings>;
+
+export const chatSessions = sqliteTable("chat_sessions", {
+  id: text("id").primaryKey(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+  lastActive: integer("last_active", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+});
+
+export type ChatSession = InferSelectModel<typeof chatSessions>;
+
+export const chatMessages = sqliteTable("chat_messages", {
+  id: text("id").primaryKey(),
+  sessionId: text("session_id").notNull().references(() => chatSessions.id, { onDelete: 'cascade' }),
+  role: text("role", { enum: ["user", "assistant", "system"] }).notNull(),
+  content: text("content").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+});
+
+export type ChatMessage = InferSelectModel<typeof chatMessages>;

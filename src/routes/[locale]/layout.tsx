@@ -1,16 +1,26 @@
 import { component$, Slot } from "@builder.io/qwik";
-import { RequestHandler } from "@builder.io/qwik-city";
+import { RequestHandler, routeLoader$ } from "@builder.io/qwik-city";
 import { guessLocale, locales } from "compiled-i18n";
 import Header from "~/components/Header";
 import Footer from "~/components/Footer";
 import { WhatsAppButton } from "~/components/WhatsAppButton";
 import { ScrollToTop } from "~/components/scroll-to-top";
+import { Chatbot } from "~/components/chatbot/chatbot";
+import { getDb } from "~/db/client.server";
+import { siteSettings } from "~/db/schema.server";
+import { eq } from "drizzle-orm";
 
 export const onStaticGenerate = async () => {
   return locales.map((locale) => ({
     locale,
   }));
 };
+
+export const useSiteSettings = routeLoader$(async ({ env }) => {
+  const db = getDb(env);
+  const [settings] = await db.select().from(siteSettings).where(eq(siteSettings.id, '1')).limit(1);
+  return settings || { aiEnabled: false };
+});
 
 const replaceLocale = (pathname: string, oldLocale: string, locale: string) => {
   const idx = pathname.indexOf(oldLocale);
@@ -47,6 +57,8 @@ export const onRequest: RequestHandler = async ({
 };
 
 export default component$(() => {
+  const settings = useSiteSettings();
+  
   return (
     <div class="flex min-h-screen flex-col">
       <Header />
@@ -56,6 +68,7 @@ export default component$(() => {
       <Footer />
       <WhatsAppButton />
       <ScrollToTop />
+      {!!settings.value?.aiEnabled ? <Chatbot /> : null}
     </div>
   );
 });

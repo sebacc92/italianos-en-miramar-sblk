@@ -100,7 +100,7 @@ export default component$(
                 {/* Stats or features */}
                 <div class="hero-stats">
                   <div class="hero-stat-item">
-                    <div class="hero-stat-number">136+</div>
+                    <div class="hero-stat-number">137+</div>
                     <div class="hero-stat-label">Años de historia</div>
                   </div>
                   <div class="hero-stat-item">

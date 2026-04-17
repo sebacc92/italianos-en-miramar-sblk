@@ -55,7 +55,8 @@ export default component$(() => {
           </div>
         ) : (
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-600">
+            {/* Desktop Table */}
+            <table class="hidden w-full text-left text-sm text-gray-600 md:table">
               <thead class="bg-gray-50 text-xs uppercase text-gray-500">
                 <tr>
                   <th class="px-6 py-4 font-semibold">Curso</th>
@@ -64,7 +65,7 @@ export default component$(() => {
                   <th class="px-6 py-4 text-right font-semibold">Acciones</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 whitespace-nowrap">
+              <tbody class="divide-y divide-gray-200">
                 {coursesData.value.map((course) => (
                   <tr key={course.id} class="transition-colors hover:bg-gray-50">
                     <td class="px-6 py-4 font-medium text-gray-900">
@@ -73,10 +74,10 @@ export default component$(() => {
                     <td class="px-6 py-4">{course.profesor}</td>
                     <td class="px-6 py-4">{course.horarios}</td>
                     <td class="px-6 py-4 text-right">
-                      <div class="flex items-center justify-end gap-2">
+                      <div class="flex items-center justify-end gap-2 text-gray-400">
                         <Link
                           href={`/admin/cursos/${course.id}/edit`}
-                          class="rounded-md p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-green-600"
+                          class="rounded-md p-2 transition-colors hover:bg-gray-100 hover:text-green-600"
                         >
                           <LuPencil class="h-4 w-4" />
                         </Link>
@@ -92,7 +93,7 @@ export default component$(() => {
                           <button
                             type="submit"
                             title="Eliminar curso"
-                            class="rounded-md p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                            class="rounded-md p-2 transition-colors hover:bg-red-50 hover:text-red-600"
                           >
                             <LuTrash2 class="h-4 w-4" />
                           </button>
@@ -103,6 +104,51 @@ export default component$(() => {
                 ))}
               </tbody>
             </table>
+
+            {/* Mobile Cards */}
+            <div class="grid grid-cols-1 divide-y divide-gray-100 md:hidden">
+              {coursesData.value.map((course) => (
+                <div key={course.id} class="p-4 space-y-3">
+                  <div class="flex items-center justify-between gap-4">
+                    <div class="min-w-0 flex-1">
+                      <h4 class="font-bold text-gray-900">{course.nombre_curso}</h4>
+                      <div class="mt-1 flex flex-col gap-1">
+                        <p class="text-xs text-gray-500">
+                          <span class="font-semibold text-gray-400 uppercase text-[9px]">Profesor:</span> {course.profesor}
+                        </p>
+                        <p class="text-xs text-gray-500">
+                          <span class="font-semibold text-gray-400 uppercase text-[9px]">Horario:</span> {course.horarios}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex shrink-0 gap-2">
+                       <Link
+                        href={`/admin/cursos/${course.id}/edit`}
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-gray-600 active:bg-gray-100"
+                      >
+                        <LuPencil class="h-4 w-4" />
+                      </Link>
+                      <Form
+                        action={deleteAction}
+                        onSubmit$={(e: Event) => {
+                          if (!window.confirm("¿Seguro que deseas eliminar el curso?")) {
+                            e.preventDefault();
+                          }
+                        }}
+                      >
+                        <input type="hidden" name="id" value={course.id} />
+                        <button
+                          type="submit"
+                          class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600 active:bg-red-100"
+                        >
+                          <LuTrash2 class="h-4 w-4" />
+                        </button>
+                      </Form>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

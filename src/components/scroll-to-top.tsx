@@ -19,11 +19,10 @@ export const ScrollToTop = component$(() => {
       type="button"
       aria-label="Scroll to top"
       onClick$={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      class={`focus:ring-primary fixed right-6 bottom-6 z-50 transform rounded-full p-3 shadow-xl transition-all duration-300 hover:scale-110 focus:ring-2 focus:outline-none ${
-        show.value
+      class={`mb-2 focus:ring-primary fixed right-6 bottom-[5.5rem] z-50 transform rounded-full p-3 shadow-xl transition-all duration-300 hover:scale-110 focus:ring-2 focus:outline-none ${show.value
           ? "translate-y-0 opacity-100"
           : "pointer-events-none translate-y-10 opacity-0"
-      } bg-primary hover:bg-primary/90 text-white`}
+        } bg-primary hover:bg-primary/90 text-white`}
       style={{ contain: "layout paint" }}
     >
       <LuChevronUp class="h-6 w-6 sm:h-8 sm:w-8" />

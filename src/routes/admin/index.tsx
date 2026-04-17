@@ -93,33 +93,35 @@ export default component$(() => {
 
   return (
     <div class="space-y-6">
-      <div class="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-        <h1 class="text-3xl font-black text-gray-900">
-          ¡Hola, <span class="capitalize text-green-600">{userName}</span>!
-        </h1>
-        <p class="mt-2 text-gray-600">
-          Bienvenido al panel de administración del Círculo Italiano. Aquí un resumen del sistema.
-        </p>
+      <div class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300">
+        <div class="bg-linear-to-r from-green-600 to-green-500 p-6 md:p-8 text-white">
+          <h1 class="text-3xl font-black md:text-4xl tracking-tight">
+            ¡Hola, <span class="capitalize">{userName}</span>!
+          </h1>
+          <p class="mt-2 text-green-50/90 font-medium max-w-2xl">
+            Bienvenido al panel de administración del Círculo Italiano. Aquí tienes un resumen del estado actual de tu plataforma.
+          </p>
+        </div>
       </div>
 
-      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {(!isDanzaNutriUser && !isArteUser) && (
           <>
-            <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-              <span class="mb-2 text-5xl font-black text-green-600">{stats.value.autoridades}</span>
-              <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+            <div class="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-green-200 hover:shadow-md">
+              <span class="mb-2 text-5xl font-black text-green-600 group-hover:scale-110 transition-transform">{stats.value.autoridades}</span>
+              <span class="text-xs font-bold uppercase tracking-widest text-gray-400">
                 Autoridades
               </span>
             </div>
-            <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-              <span class="mb-2 text-5xl font-black text-green-600">{stats.value.eventos}</span>
-              <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+            <div class="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-green-200 hover:shadow-md">
+              <span class="mb-2 text-5xl font-black text-green-600 group-hover:scale-110 transition-transform">{stats.value.eventos}</span>
+              <span class="text-xs font-bold uppercase tracking-widest text-gray-400">
                 Eventos Activos
               </span>
             </div>
-            <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-              <span class="mb-2 text-5xl font-black text-green-600">{stats.value.cursos}</span>
-              <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+            <div class="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-green-200 hover:shadow-md">
+              <span class="mb-2 text-5xl font-black text-green-600 group-hover:scale-110 transition-transform">{stats.value.cursos}</span>
+              <span class="text-xs font-bold uppercase tracking-widest text-gray-400">
                 Cursos Idiomas
               </span>
             </div>
@@ -127,27 +129,27 @@ export default component$(() => {
         )}
 
         {(!isArteUser) && (
-          <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <span class="mb-2 text-5xl font-black text-green-600">{stats.value.danzas}</span>
-            <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+          <div class="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-green-200 hover:shadow-md">
+            <span class="mb-2 text-5xl font-black text-green-600 group-hover:scale-110 transition-transform">{stats.value.danzas}</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-gray-400">
               Clases de Danza
             </span>
           </div>
         )}
 
         {(!isArteUser) && (
-          <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <span class="mb-2 text-5xl font-black text-green-600">{stats.value.nutricion}</span>
-            <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+          <div class="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-green-200 hover:shadow-md">
+            <span class="mb-2 text-5xl font-black text-green-600 group-hover:scale-110 transition-transform">{stats.value.nutricion}</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-gray-400">
               Horarios Nutrición
             </span>
           </div>
         )}
 
         {(!isDanzaNutriUser) && (
-          <div class="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <span class="mb-2 text-5xl font-black text-green-600">{stats.value.arte}</span>
-            <span class="text-sm font-semibold uppercase tracking-widest text-gray-400">
+          <div class="group flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-green-200 hover:shadow-md">
+            <span class="mb-2 text-5xl font-black text-green-600 group-hover:scale-110 transition-transform">{stats.value.arte}</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-gray-400">
               Talleres de Arte
             </span>
           </div>
