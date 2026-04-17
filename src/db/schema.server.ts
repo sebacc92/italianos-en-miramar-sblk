@@ -164,6 +164,23 @@ export type NutricionHorario = InferSelectModel<typeof nutricionHorarios>;
 // NUEVO MÓDULO: ARTE
 // ==========================================
 
+export const arteConfig = sqliteTable("arte_config", {
+  id: text("id").primaryKey(),
+  telefono_1: text("telefono_1"),
+  telefono_2: text("telefono_2"),
+  descripcion_libre: text("descripcion_libre"),
+});
+
+export type ArteConfig = InferSelectModel<typeof arteConfig>;
+
+export const arteGaleria = sqliteTable("arte_galeria", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  imageUrl: text("image_url").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+});
+
+export type ArteGaleria = InferSelectModel<typeof arteGaleria>;
+
 export const arteCursos = sqliteTable("arte_cursos", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   nombre: text("nombre").notNull(),
