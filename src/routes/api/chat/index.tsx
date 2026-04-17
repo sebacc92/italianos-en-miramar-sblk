@@ -10,7 +10,7 @@ export const onPost: RequestHandler = async (requestEvent) => {
 
     // Check if chatbot is enabled before processing
     const db = getDb(env);
-    
+
     // We expect settings id = "1"
     const [settings] = await db.select().from(siteSettings).where(eq(siteSettings.id, '1')).limit(1);
 
@@ -58,13 +58,13 @@ export const onPost: RequestHandler = async (requestEvent) => {
       db.select().from(events).orderBy(desc(events.createdAt)).limit(10), // only last 10
       db.select().from(autoridades)
     ]);
-    
+
     const coursesContext = allCourses.map((c) => `- ${c.nombre_curso} (Prof. ${c.profesor}) - Horarios: ${c.horarios}`).join('\n');
     const servicesContext = allServices.map((s) => `- ${s.title} (${s.category})`).join('\n');
     const authoritiesContext = auths.map((a) => `- ${a.nombre}: ${a.cargo}`).join('\n');
 
     // System prompt
-    const systemPrompt = `Eres el Asistente Virtual Oficial del "Círculo Italiano Joven Italia" (conocido como Sociedad Italiana de Miramar).
+    const systemPrompt = `Eres el Asistente Virtual Oficial de la "Mutual Cultural Círculo Italiano Joven Italia" (conocido como Mutual Italiana de Miramar).
 Tu propósito único y exclusivo es asesorar a socios, futuros socios y la comunidad sobre los servicios, cursos, eventos, ciudadanía italiana y la historia de nuestra institución.
 
 CONOCIMIENTO INSTITUCIONAL:
