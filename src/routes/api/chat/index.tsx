@@ -1,6 +1,6 @@
 import { type RequestHandler } from '@builder.io/qwik-city';
 import { getDb } from '../../../db/client.server';
-import { siteSettings, chatSessions, chatMessages, events, courses, services, autoridades } from '../../../db/schema.server';
+import { siteSettings, chatSessions, chatMessages, events, courses, services, autoridades, ciudadania } from '../../../db/schema.server';
 import { eq, desc } from 'drizzle-orm';
 import OpenAI from 'openai';
 
@@ -52,16 +52,18 @@ export const onPost: RequestHandler = async (requestEvent) => {
     }
 
     // Fetch context from DB
-    const [allCourses, allServices, allEvents, auths] = await Promise.all([
+    const [allCourses, allServices, allEvents, auths, ciudadaniaData] = await Promise.all([
       db.select().from(courses),
       db.select().from(services),
       db.select().from(events).orderBy(desc(events.createdAt)).limit(10), // only last 10
-      db.select().from(autoridades)
+      db.select().from(autoridades),
+      db.select().from(ciudadania)
     ]);
 
-    const coursesContext = allCourses.map((c) => `- ${c.nombre_curso} (Prof. ${c.profesor}) - Horarios: ${c.horarios}`).join('\n');
+    const coursesContext = allCourses.map((c) => `- ${c.nombre_curso} (Prof. ${c.profesor}) - Horarios: ${c.horarios} | Valor: Socios $${c.precio_socio}, No Socios $${c.precio_no_socio}, Inscripción $${c.precio_inscripcion}`).join('\n');
     const servicesContext = allServices.map((s) => `- ${s.title} (${s.category})`).join('\n');
     const authoritiesContext = auths.map((a) => `- ${a.nombre}: ${a.cargo}`).join('\n');
+    const ciudadaniaContext = ciudadaniaData.map((c) => `- Horarios de asesoría: ${c.dia_hora} (Asesora: ${c.nombre_asesora || 'Confirmar en secretaría'})`).join('\n');
 
     // System prompt
     const systemPrompt = `Eres el Asistente Virtual Oficial de la "Mutual Cultural Círculo Italiano Joven Italia" (conocido como Mutual Italiana de Miramar).
@@ -75,6 +77,9 @@ CONOCIMIENTO INSTITUCIONAL:
 DATOS EN TIEMPO REAL DE LA BASE DE DATOS:
 - WhatsApp de Contacto: ${settings?.whatsappNumber || 'No configurado'}
 - Novedades y Conocimiento Extra proporcionado por la comisión: "${settings?.aiKnowledge || 'Sin novedades por el momento'}"
+
+### Trámites de Ciudadanía Italiana:
+${ciudadaniaContext || 'Consultar por WhatsApp los días y horarios correspondientes.'}
 
 ### Cursos Disponibles:
 ${coursesContext || 'No hay cursos registrados en el sistema.'}
