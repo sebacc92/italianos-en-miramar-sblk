@@ -10,6 +10,8 @@ import { events } from "~/db/schema.server";
 import { eq, desc } from "drizzle-orm";
 import { Card } from "~/components/ui/card/card";
 import { EventCard } from "~/components/events/EventCard";
+import { SocialFeed } from "~/components/home/social-feed/social-feed";
+import { instagramPosts } from "~/db/schema.server";
 
 export const useRecentEvents = routeLoader$(async ({ params, env }) => {
   const db = getDb(env);
@@ -26,10 +28,32 @@ export const useRecentEvents = routeLoader$(async ({ params, env }) => {
   }
 });
 
+export const useInstagramPosts = routeLoader$(async ({ env }) => {
+  const db = getDb(env);
+
+  try {
+    return await db.select().from(instagramPosts)
+      .orderBy(desc(instagramPosts.timestamp))
+      .limit(12);
+  } catch (e) {
+    console.error("Error fetching instagram posts:", e);
+    return [];
+  }
+});
+
 export default component$(() => {
   const title = _`home.title`;
   const subtitle = _`home.subtitle`;
   const recentEvents = useRecentEvents();
+  const instagramData = useInstagramPosts();
+
+  // Transform to the prop format expected by SocialFeed
+  const postsForFeed = instagramData.value.map(post => ({
+    id: post.id,
+    imageUrl: post.mediaUrl,
+    link: post.permalink,
+    caption: post.caption || undefined,
+  }));
 
   return (
     <>
@@ -64,6 +88,8 @@ export default component$(() => {
           </div>
         </section>
       )}
+
+      <SocialFeed posts={postsForFeed} />
 
       <History />
     </>

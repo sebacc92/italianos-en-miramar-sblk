@@ -252,6 +252,20 @@ export const exposicionesObras = sqliteTable("exposiciones_obras", {
 export type ExposicionObra = InferSelectModel<typeof exposicionesObras>;
 
 // ==========================================
+// INSTAGRAM FEED
+// ==========================================
+export const instagramPosts = sqliteTable('instagram_posts', {
+  id: text('id').primaryKey(),
+  permalink: text('permalink').notNull(),
+  mediaUrl: text('media_url').notNull(),
+  mediaType: text('media_type'),
+  caption: text('caption'),
+  timestamp: text('timestamp'),
+});
+
+export type InstagramPost = InferSelectModel<typeof instagramPosts>;
+
+// ==========================================
 // CONFIGURACIÓN E IA CHATBOT
 // ==========================================
 export const siteSettings = sqliteTable("site_settings", {
