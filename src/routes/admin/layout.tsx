@@ -15,7 +15,8 @@ import {
   LuMenu,
   LuX,
   LuBot,
-  LuMessageSquare
+  LuMessageSquare,
+  LuCalendarDays
 } from "@qwikest/icons/lucide";
 
 const navLinks = [
@@ -75,6 +76,11 @@ const navLinks = [
     label: "Auditoría de IA",
     icon: <LuMessageSquare class="h-5 w-5" />,
   },
+  {
+    href: "/admin/reservas",
+    label: "Reservas de Salones",
+    icon: <LuCalendarDays class="h-5 w-5" />,
+  },
 ];
 
 const AccessDenied = component$(() => {
@@ -116,6 +122,7 @@ export default component$(() => {
 
   const isDanzaNutriUser = userName === 'flor' || userName === 'martinap' || userName === 'martina';
   const isArteUser = userName === 'natalia';
+  const isSalonAdmin = userName === 'seba' || userName === 'laura' || userName === 'mary';
 
   let currentNavLinks = [...navLinks];
 
@@ -144,6 +151,9 @@ export default component$(() => {
       disabled = true;
     }
     if (isArteUser && link.href !== '/admin/arte' && link.href !== '/admin') {
+      disabled = true;
+    }
+    if (link.href === '/admin/reservas' && !isSalonAdmin) {
       disabled = true;
     }
     return { ...link, disabled };

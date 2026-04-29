@@ -71,7 +71,7 @@ export const preinscripciones = sqliteTable("preinscripciones", {
   telefono: text("telefono"),
   curso: text("curso").notNull(),
   estado: text("estado").default("pendiente"),
-  fecha_creacion: integer("fecha_creacion", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+  fecha_creacion: text("fecha_creacion").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const reservas_salones = sqliteTable("reservas_salones", {
@@ -85,7 +85,7 @@ export const reservas_salones = sqliteTable("reservas_salones", {
   fecha_estimada: text("fecha_estimada").notNull(),
   mensaje: text("mensaje"),
   estado: text("estado").default("pendiente"),
-  created_at: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+  created_at: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const solicitudes_asociacion = sqliteTable("solicitudes_asociacion", {
@@ -107,7 +107,7 @@ export const solicitudes_asociacion = sqliteTable("solicitudes_asociacion", {
   socio_presentante_2: text("socio_presentante_2"),
   motivo_asociacion: text("motivo_asociacion"),
   estado: text("estado").default("pendiente"),
-  fecha_solicitud: integer("fecha_solicitud", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+  fecha_solicitud: text("fecha_solicitud").default(sql`CURRENT_TIMESTAMP`),
 }, (table) => ({
   idx_solicitudes_fecha: index("idx_solicitudes_fecha").on(table.fecha_solicitud),
   idx_solicitudes_estado: index("idx_solicitudes_estado").on(table.estado),
@@ -131,7 +131,7 @@ export const danzasCronograma = sqliteTable("danzas_cronograma", {
 export const danzasGaleria = sqliteTable("danzas_galeria", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   imageUrl: text("image_url").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export type DanzaCronograma = InferSelectModel<typeof danzasCronograma>;
@@ -176,7 +176,7 @@ export type ArteConfig = InferSelectModel<typeof arteConfig>;
 export const arteGaleria = sqliteTable("arte_galeria", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   imageUrl: text("image_url").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export type ArteGaleria = InferSelectModel<typeof arteGaleria>;
@@ -281,8 +281,8 @@ export type SiteSettings = InferSelectModel<typeof siteSettings>;
 
 export const chatSessions = sqliteTable("chat_sessions", {
   id: text("id").primaryKey(),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
-  lastActive: integer("last_active", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  lastActive: text("last_active").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export type ChatSession = InferSelectModel<typeof chatSessions>;
@@ -292,7 +292,7 @@ export const chatMessages = sqliteTable("chat_messages", {
   sessionId: text("session_id").notNull().references(() => chatSessions.id, { onDelete: 'cascade' }),
   role: text("role", { enum: ["user", "assistant", "system"] }).notNull(),
   content: text("content").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export type ChatMessage = InferSelectModel<typeof chatMessages>;

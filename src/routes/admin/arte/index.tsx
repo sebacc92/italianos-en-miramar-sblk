@@ -33,7 +33,7 @@ export const useConfigLoader = routeLoader$(async (requestEvent) => {
 export const useUpdateConfigAction = routeAction$(async (data, requestEvent) => {
   const db = getDb(requestEvent.env);
   const existing = await db.select().from(arteConfig).where(eq(arteConfig.id, "1")).limit(1);
-  
+
   if (existing.length > 0) {
     await db.update(arteConfig).set({
       telefono_1: data.telefono_1,
@@ -57,7 +57,7 @@ export const useUpdateConfigAction = routeAction$(async (data, requestEvent) => 
 
 export const useUpdateGalleryAction = routeAction$(async (data, requestEvent) => {
   const db = getDb(requestEvent.env);
-  
+
   let urls: string[] = [];
   try {
     urls = JSON.parse(data.urls as string);
@@ -66,12 +66,12 @@ export const useUpdateGalleryAction = routeAction$(async (data, requestEvent) =>
   }
 
   await db.delete(arteGaleria);
-  
+
   if (urls.length > 0) {
     const values = urls.map(url => ({ imageUrl: url }));
     await db.insert(arteGaleria).values(values);
   }
-  
+
   return { success: true };
 });
 
@@ -128,10 +128,10 @@ export const useDeleteArteAction = routeAction$(async (data, requestEvent) => {
 export default component$(() => {
   const cursos = useArteLoader();
   const configData = useConfigLoader();
-  
+
   const updateConfigAction = useUpdateConfigAction();
   const updateGalleryAction = useUpdateGalleryAction();
-  
+
   const createAction = useCreateArteAction();
   const updateAction = useUpdateArteAction();
   const deleteAction = useDeleteArteAction();
@@ -151,10 +151,10 @@ export default component$(() => {
           Administra los talleres, descripción frontal y la galería de fotos.
         </p>
       </div>
-      
+
       {/* GRID DE PANELES */}
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-        
+
         {/* SECCIÓN CONFIGURACIÓN WEB */}
         <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div class="mb-6 flex items-center justify-between">
@@ -162,7 +162,7 @@ export default component$(() => {
               <LuSettings class="mr-2 h-5 w-5 text-gray-600" /> Configuración Web
             </h2>
           </div>
-          
+
           <Form action={updateConfigAction} class="space-y-6">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
@@ -174,18 +174,18 @@ export default component$(() => {
                 <Input name="telefono_2" placeholder="Opcional" value={config?.telefono_2 || ''} />
               </div>
             </div>
-            
+
             <div>
               <label class="mb-2 block text-sm font-semibold text-gray-700">Descripción Principal (Aparece arriba en la web)</label>
               <div class="prose-sm">
-                <WysiwygEditor 
-                  name="descripcion_libre" 
-                  value={config?.descripcion_libre || ''} 
-                  placeholder="Ej: Te invitamos a sumarte a nuestros talleres de arte para desarrollar tu creatividad..." 
+                <WysiwygEditor
+                  name="descripcion_libre"
+                  value={config?.descripcion_libre || ''}
+                  placeholder="Ej: Te invitamos a sumarte a nuestros talleres de arte para desarrollar tu creatividad..."
                 />
               </div>
             </div>
-            
+
             <div class="flex justify-end pt-2">
               <Button type="submit" disabled={updateConfigAction.isRunning}>
                 {updateConfigAction.isRunning ? "Guardando..." : "Guardar Configuración"}
