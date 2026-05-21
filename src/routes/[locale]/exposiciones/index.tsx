@@ -1,5 +1,5 @@
 import { component$, useSignal, useComputed$, $ } from "@builder.io/qwik";
-import { type DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
+import { type DocumentHead, routeLoader$, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { getDb } from "~/db/client.server";
 import { exposiciones, exposicionesObras } from "~/db/schema.server";
 import { desc, eq } from "drizzle-orm";
@@ -13,6 +13,8 @@ import {
   LuX,
   LuInfo,
   LuSparkles,
+  LuShare2,
+  LuCheck,
 } from "@qwikest/icons/lucide";
 import salaExposicionesUrl from "~/media/sala-de-exposiciones.webp?url";
 
@@ -61,8 +63,15 @@ export default component$(() => {
   const data = useAllExposiciones();
   const { exposiciones: list, activeExpoId } = data.value;
 
-  const selectedExpoId = useSignal<string | null>(activeExpoId);
+  const loc = useLocation();
+  const nav = useNavigate();
+  const queryExpoId = loc.url.searchParams.get("expo");
+
+  const selectedExpoId = useSignal<string | null>(
+    (queryExpoId && list.some(e => e.id === queryExpoId)) ? queryExpoId : activeExpoId
+  );
   const lightboxIndex = useSignal<number | null>(null);
+  const copied = useSignal(false);
 
   // Selected exhibition data
   const selectedExpo = useComputed$(() => {
@@ -227,7 +236,7 @@ export default component$(() => {
                   <p class="text-xs text-stone-400 mt-1">Selecciona una exposición para ver sus detalles y obras.</p>
                 </div>
 
-                <div class="space-y-4 max-h-[70vh] lg:max-h-[85vh] overflow-y-auto pr-2 scrollbar-thin">
+                <div class="flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible overflow-y-hidden lg:overflow-y-auto pb-4 lg:pb-0 gap-4 snap-x pr-0 lg:pr-2 lg:max-h-[85vh] scrollbar-thin">
                   {list.map((expo) => {
                     const status = getStatusInfo(expo.fecha_inicio, expo.fecha_fin);
                     const isSelected = selectedExpoId.value === expo.id;
@@ -236,14 +245,15 @@ export default component$(() => {
                     return (
                       <button
                         key={expo.id}
-                        onClick$={() => {
+                        onClick$={async () => {
                           selectedExpoId.value = expo.id;
                           lightboxIndex.value = null; // Reset lightbox
+                          await nav(`?expo=${expo.id}`, { replaceState: true });
                         }}
                         class={[
-                          "w-full text-left p-4 rounded-2xl border transition-all duration-300 flex items-start gap-4 focus:outline-none shadow-sm",
+                          "snap-start shrink-0 w-[290px] sm:w-[320px] lg:w-full text-left p-4 rounded-2xl border transition-all duration-300 flex items-start gap-4 focus:outline-none shadow-sm",
                           isSelected
-                            ? "bg-stone-900 border-stone-950 text-white translate-x-1 ring-4 ring-stone-900/10"
+                            ? "bg-stone-900 border-stone-950 text-white lg:translate-x-1 ring-4 ring-stone-900/10"
                             : "bg-white hover:bg-stone-50 border-stone-200/80 hover:border-stone-300 text-stone-850"
                         ]}
                       >
@@ -331,7 +341,7 @@ export default component$(() => {
 
                         {/* Details side */}
                         <div class="flex-1 p-6 md:p-8 lg:p-10 flex flex-col justify-center">
-                          <div class="flex items-center gap-2 mb-4">
+                          <div class="flex items-center justify-between gap-4 mb-4 flex-wrap">
                             <span class={[
                               "px-3 py-1 rounded-full text-xs font-bold border tracking-wider uppercase",
                               selectedExpo.value.id === activeExpoId
@@ -340,6 +350,34 @@ export default component$(() => {
                             ]}>
                               {selectedExpo.value.id === activeExpoId ? "🔴 Exposición Activa" : getStatusInfo(selectedExpo.value.fecha_inicio, selectedExpo.value.fecha_fin).label}
                             </span>
+
+                            <button
+                              onClick$={$(async () => {
+                                if (!selectedExpo.value) return;
+                                const url = window.location.origin + window.location.pathname + "?expo=" + selectedExpo.value.id;
+                                try {
+                                  await navigator.clipboard.writeText(url);
+                                  copied.value = true;
+                                  setTimeout(() => { copied.value = false; }, 2000);
+                                } catch (err) {
+                                  console.error("No se pudo copiar el enlace:", err);
+                                }
+                              })}
+                              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-200 hover:border-stone-300 bg-white hover:bg-stone-50 text-stone-600 hover:text-stone-900 text-xs font-bold shadow-xs transition-all cursor-pointer active:scale-95"
+                              title="Copiar enlace de esta exposición para compartir"
+                            >
+                              {copied.value ? (
+                                <>
+                                  <LuCheck class="h-3.5 w-3.5 text-emerald-600" />
+                                  <span class="text-emerald-700 font-extrabold">¡Enlace Copiado!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <LuShare2 class="h-3.5 w-3.5 text-stone-500" />
+                                  <span>Compartir Muestra</span>
+                                </>
+                              )}
+                            </button>
                           </div>
 
                           <h2 class="text-3xl font-black text-stone-900 leading-tight mb-6">
