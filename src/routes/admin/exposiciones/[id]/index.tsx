@@ -120,11 +120,20 @@ export default component$(() => {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const filename = file.name.replace(/\s+/g, "_");
-        const newBlob = await upload(filename, file, {
-          access: 'public',
-          handleUploadUrl: '/api/upload',
-        });
-        newUploadedUrls.push(newBlob.url);
+        try {
+          const newBlob = await upload(filename, file, {
+            access: 'public',
+            handleUploadUrl: '/api/upload',
+          });
+          newUploadedUrls.push(newBlob.url);
+        } catch (err: any) {
+          const errMsg = err.message || "";
+          if (errMsg.includes("already exists") || errMsg.includes("allowOverwrite") || errMsg.includes("BlobAlreadyExists")) {
+            console.warn(`El archivo ${filename} ya existe. Omitiendo y continuando con el resto...`, err);
+            continue;
+          }
+          throw err;
+        }
       }
 
       // Sync final list

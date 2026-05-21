@@ -44,12 +44,26 @@ export const MultiImageUploader = component$<MultiImageUploaderProps>(
           previewUrls.value = [...previewUrls.value, tempUrl];
 
           const filename = file.name.replace(/\s+/g, "_");
-          const newBlob = await upload(filename, file, {
-            access: 'public',
-            handleUploadUrl: '/api/upload',
-          });
-
-          newUploadedUrls.push(newBlob.url);
+          try {
+            const newBlob = await upload(filename, file, {
+              access: 'public',
+              handleUploadUrl: '/api/upload',
+            });
+            newUploadedUrls.push(newBlob.url);
+          } catch (err: any) {
+            const errMsg = err.message || "";
+            if (errMsg.includes("already exists") || errMsg.includes("allowOverwrite") || errMsg.includes("BlobAlreadyExists")) {
+              console.warn(`El archivo ${filename} ya existe. Omitiendo...`, err);
+              // Remove the optimistic temp URL for this skipped file
+              previewUrls.value = previewUrls.value.filter(url => url !== tempUrl);
+              URL.revokeObjectURL(tempUrl);
+              // Remove from currentTempUrls so we don't revoke it again in finally
+              const idx = currentTempUrls.indexOf(tempUrl);
+              if (idx > -1) currentTempUrls.splice(idx, 1);
+              continue;
+            }
+            throw err;
+          }
         }
 
         // Replace temp URLs with final URLs
