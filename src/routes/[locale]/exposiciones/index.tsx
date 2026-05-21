@@ -1,6 +1,5 @@
 import { component$, useSignal, useComputed$, $ } from "@builder.io/qwik";
 import { type DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
-import Sala3D from "~/components/exposiciones/sala-3d";
 import { getDb } from "~/db/client.server";
 import { exposiciones, exposicionesObras } from "~/db/schema.server";
 import { desc, eq } from "drizzle-orm";
@@ -13,7 +12,7 @@ import {
   LuChevronRight,
   LuX,
   LuInfo,
-  LuSparkles
+  LuSparkles,
 } from "@qwikest/icons/lucide";
 import salaExposicionesUrl from "~/media/sala-de-exposiciones.webp?url";
 
@@ -64,7 +63,6 @@ export default component$(() => {
 
   const selectedExpoId = useSignal<string | null>(activeExpoId);
   const lightboxIndex = useSignal<number | null>(null);
-  const show3D = useSignal<boolean>(false);
 
   // Selected exhibition data
   const selectedExpo = useComputed$(() => {
@@ -435,17 +433,7 @@ export default component$(() => {
                           </span>
                         </h3>
                         <div class="flex flex-wrap items-center gap-3">
-                          {selectedExpo.value.obras.length > 0 && (
-                            <button
-                              onClick$={() => {
-                                show3D.value = true;
-                              }}
-                              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-extrabold text-sm shadow-md hover:shadow-lg hover:scale-102 transition-all cursor-pointer"
-                            >
-                              <LuSparkles class="h-4.5 w-4.5 animate-pulse" />
-                              <span>Ver Recorrido 3D (Sala Virtual)</span>
-                            </button>
-                          )}
+
                           <p class="text-xs text-stone-400 italic">Haz clic en cualquier obra para ampliarla.</p>
                         </div>
                       </div>
@@ -616,15 +604,7 @@ export default component$(() => {
         </div>
       )}
 
-      {show3D.value && selectedExpo.value && (
-        <Sala3D
-          obras={selectedExpo.value.obras}
-          nombreArtista={selectedExpo.value.nombre_artista}
-          onClose$={$(() => {
-            show3D.value = false;
-          })}
-        />
-      )}
+
     </div>
   );
 });
