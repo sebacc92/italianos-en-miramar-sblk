@@ -146,6 +146,14 @@ export default component$(() => {
     };
   };
 
+  const formatDateStr = (dateStr: string | null) => {
+    if (!dateStr) return "";
+    const parts = dateStr.split("-");
+    if (parts.length !== 3) return dateStr;
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+  };
+
   // Helper to get status badge
   const getStatusInfo = (inicio: string, fin: string) => {
     if (!inicio || !fin) return { label: "Sin fecha", color: "bg-gray-100 text-gray-700 border-gray-200" };
@@ -240,23 +248,23 @@ export default component$(() => {
                         ]}
                       >
                         {/* Thumbnail / Flyer small */}
-                        <div class="relative shrink-0 w-16 h-20 rounded-lg overflow-hidden bg-stone-100 border border-stone-200/80 flex items-center justify-center">
+                        <div class="relative shrink-0 w-20 h-28 rounded-lg overflow-hidden bg-stone-100 border border-stone-200/80 flex items-center justify-center">
                           {expo.flyerUrl ? (
                             <img
                               src={expo.flyerUrl}
                               alt={expo.titulo}
                               class="w-full h-full object-cover"
-                              width="64"
-                              height="80"
+                              width="80"
+                              height="112"
                               loading="lazy"
                             />
                           ) : (
-                            <LuPalette class="h-6 w-6 text-stone-400" />
+                            <LuPalette class="h-8 w-8 text-stone-400" />
                           )}
                         </div>
 
                         {/* Title & metadata info */}
-                        <div class="min-w-0 flex-1 flex flex-col justify-between h-20">
+                        <div class="min-w-0 flex-1 flex flex-col justify-between min-h-[112px] py-0.5">
                           <div>
                             <div class="flex items-center gap-1.5 flex-wrap">
                               <span class={[
@@ -269,25 +277,28 @@ export default component$(() => {
                               </span>
                             </div>
                             <h3 class={[
-                              "font-black text-sm mt-1.5 leading-tight truncate",
+                              "font-black text-base mt-1.5 leading-tight truncate",
                               isSelected ? "text-white" : "text-stone-900"
                             ]}>
                               {expo.titulo}
                             </h3>
                             <p class={[
-                              "text-xs mt-0.5 truncate",
-                              isSelected ? "text-stone-300" : "text-stone-500"
+                              "text-sm mt-1 truncate",
+                              isSelected ? "text-stone-200" : "text-stone-700"
                             ]}>
-                              Artista: <span class="font-semibold">{expo.nombre_artista}</span>
+                              Artista: <span class={[
+                                "font-black",
+                                isSelected ? "text-white" : "text-stone-950"
+                              ]}>{expo.nombre_artista}</span>
                             </p>
                           </div>
 
                           <div class={[
-                            "text-[10px] font-medium flex items-center gap-1 mt-1",
-                            isSelected ? "text-stone-400" : "text-stone-400"
+                            "text-xs font-semibold flex items-center gap-1.5 mt-2",
+                            isSelected ? "text-stone-300" : "text-stone-500"
                           ]}>
-                            <LuCalendar class="h-3 w-3 shrink-0" />
-                            {expo.fecha_inicio ? `${expo.fecha_inicio} al ${expo.fecha_fin}` : expo.fecha_inauguracion}
+                            <LuCalendar class="h-3.5 w-3.5 shrink-0" />
+                            <span>{expo.fecha_inicio ? `${formatDateStr(expo.fecha_inicio)} al ${formatDateStr(expo.fecha_fin)}` : expo.fecha_inauguracion}</span>
                           </div>
                         </div>
                       </button>
@@ -363,7 +374,7 @@ export default component$(() => {
                               <div>
                                 <p class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Vigencia</p>
                                 <p class="text-stone-900 font-semibold">
-                                  {selectedExpo.value.fecha_inicio ? `${selectedExpo.value.fecha_inicio} al ${selectedExpo.value.fecha_fin}` : "N/A"}
+                                  {selectedExpo.value.fecha_inicio ? `${formatDateStr(selectedExpo.value.fecha_inicio)} al ${formatDateStr(selectedExpo.value.fecha_fin)}` : "N/A"}
                                 </p>
                               </div>
                             </div>
