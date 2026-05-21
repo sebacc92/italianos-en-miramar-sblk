@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useSignal, $ } from "@builder.io/qwik";
 import { type DocumentHead, routeLoader$, Link, useLocation } from "@builder.io/qwik-city";
 import { generateI18nPaths } from "~/utils/i18n-utils";
 import { getDb } from "~/db/client.server";
@@ -36,6 +36,7 @@ export default component$(() => {
   const eventoSignal = useEventoDetail();
   const loc = useLocation();
   const currentLocale = loc.params.locale || "es";
+  const copied = useSignal(false);
 
   if (eventoSignal.value.errorMessage) {
     return (
@@ -113,9 +114,43 @@ export default component$(() => {
 
         <div class="p-8">
           <header class="mb-8 border-b border-gray-100 pb-8">
-            <h1 class="mb-4 text-4xl font-black leading-tight text-gray-900 md:text-5xl">
-              {content.title}
-            </h1>
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+              <h1 class="text-4xl font-black leading-tight text-gray-900 md:text-5xl flex-1">
+                {content.title}
+              </h1>
+
+              <button
+                onClick$={$(async () => {
+                  const url = window.location.href;
+                  try {
+                    await navigator.clipboard.writeText(url);
+                    copied.value = true;
+                    setTimeout(() => { copied.value = false; }, 2000);
+                  } catch (err) {
+                    console.error("No se pudo copiar el enlace:", err);
+                  }
+                })}
+                class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 text-sm font-bold shadow-xs transition-all cursor-pointer active:scale-95 self-start"
+                title="Copiar enlace de este evento para compartir"
+              >
+                {copied.value ? (
+                  <>
+                    <svg class="h-4 w-4 text-emerald-600 animate-[bounce_0.5s_ease-out]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    <span class="text-emerald-700 font-extrabold">¡Copiado!</span>
+                  </>
+                ) : (
+                  <>
+                    <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                    </svg>
+                    <span>Compartir Evento</span>
+                  </>
+                )}
+              </button>
+            </div>
+
             <div class="flex items-center text-gray-500">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mr-2 h-6 w-6 text-green-600">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
