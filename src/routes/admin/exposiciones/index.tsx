@@ -3,9 +3,10 @@ import { type DocumentHead, routeLoader$, routeAction$, z, zod$, Form } from "@b
 import { getDb } from "~/db/client.server";
 import { exposiciones } from "~/db/schema.server";
 import { desc, eq } from "drizzle-orm";
-import { LuPlus, LuTrash2, LuImagePlus, LuPalette } from "@qwikest/icons/lucide";
+import { LuPlus, LuTrash2, LuImagePlus, LuPalette, LuPencil } from "@qwikest/icons/lucide";
 import { Button } from "~/components/ui/Button";
 import { Input } from "~/components/ui/Input";
+import { ImageUploader } from "~/components/ui/ImageUploader";
 
 export const head: DocumentHead = {
   title: "Exposiciones — Admin | Círculo Italiano",
@@ -13,7 +14,7 @@ export const head: DocumentHead = {
 
 export const useExposicionesLoader = routeLoader$(async (requestEvent) => {
   const db = getDb(requestEvent.env);
-  const rows = await db.select().from(exposiciones).orderBy(desc(exposiciones.createdAt));
+  const rows = await db.select().from(exposiciones).orderBy(desc(exposiciones.fecha_inicio));
   return rows.map(({ createdAt, ...rest }) => rest);
 });
 
@@ -25,14 +26,46 @@ export const useCreateExposicionAction = routeAction$(
       fecha_inauguracion: data.fecha_inauguracion,
       nombre_artista: data.nombre_artista,
       contacto_artista: data.contacto_artista,
+      flyerUrl: data.flyerUrl || null,
+      fecha_inicio: data.fecha_inicio,
+      fecha_fin: data.fecha_fin,
     });
     return { success: true };
   },
   zod$({
     titulo: z.string().min(1, "El título es obligatorio"),
-    fecha_inauguracion: z.string().min(1, "La fecha es obligatoria"),
+    fecha_inauguracion: z.string().min(1, "La fecha de inauguración es obligatoria"),
     nombre_artista: z.string().min(1, "El nombre del artista es obligatorio"),
     contacto_artista: z.string().min(1, "El contacto es obligatorio"),
+    flyerUrl: z.string().optional(),
+    fecha_inicio: z.string().min(1, "La fecha de inicio es obligatoria"),
+    fecha_fin: z.string().min(1, "La fecha de cierre es obligatoria"),
+  })
+);
+
+export const useUpdateExposicionAction = routeAction$(
+  async (data, requestEvent) => {
+    const db = getDb(requestEvent.env);
+    await db.update(exposiciones).set({
+      titulo: data.titulo,
+      fecha_inauguracion: data.fecha_inauguracion,
+      nombre_artista: data.nombre_artista,
+      contacto_artista: data.contacto_artista,
+      flyerUrl: data.flyerUrl || null,
+      fecha_inicio: data.fecha_inicio,
+      fecha_fin: data.fecha_fin,
+    }).where(eq(exposiciones.id, data.id));
+    return { success: true };
+  },
+  zod$({
+    id: z.string().min(1),
+    titulo: z.string().min(1, "El título es obligatorio"),
+    fecha_inauguracion: z.string().min(1, "La fecha de inauguración es obligatoria"),
+    nombre_artista: z.string().min(1, "El nombre del artista es obligatorio"),
+    contacto_artista: z.string().min(1, "El contacto es obligatorio"),
+    flyerUrl: z.string().optional(),
+    fecha_inicio: z.string().min(1, "La fecha de inicio es obligatoria"),
+    fecha_fin: z.string().min(1, "La fecha de cierre es obligatoria"),
   })
 );
 
@@ -45,8 +78,11 @@ export const useDeleteExposicionAction = routeAction$(async (data, requestEvent)
 export default component$(() => {
   const data = useExposicionesLoader();
   const createAction = useCreateExposicionAction();
+  const updateAction = useUpdateExposicionAction();
   const deleteAction = useDeleteExposicionAction();
   const showAddForm = useSignal(false);
+  const editingExpo = useSignal<any>(null);
+  const flyerUrlSig = useSignal<string>("");
 
   return (
     <div>
@@ -59,10 +95,16 @@ export default component$(() => {
 
       <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <div class="mb-6 flex items-center justify-between">
-          <h2 class="text-xl font-bold text-gray-900">Exposiciones</h2>
+          <h2 class="text-xl font-bold text-gray-900">
+            {editingExpo.value ? "Editar Exposición" : "Exposiciones"}
+          </h2>
           <Button
             variant="outline"
-            onClick$={() => (showAddForm.value = !showAddForm.value)}
+            onClick$={() => {
+              editingExpo.value = null;
+              showAddForm.value = !showAddForm.value;
+              flyerUrlSig.value = "";
+            }}
           >
             <LuPlus class="mr-2 h-4 w-4" />
             Nueva Exposición
@@ -71,33 +113,83 @@ export default component$(() => {
 
         {showAddForm.value && (
           <div class="mb-6 rounded-lg bg-gray-50 p-4 border border-gray-200">
-            <Form action={createAction} class="space-y-4" onSubmitCompleted$={() => {
-              if (createAction.value?.success) showAddForm.value = false;
-            }}>
+            <h3 class="text-md font-bold text-gray-800 mb-4">
+              {editingExpo.value ? `Editar detalles de: ${editingExpo.value.titulo}` : "Nueva Exposición"}
+            </h3>
+            <Form
+              action={editingExpo.value ? updateAction : createAction}
+              class="space-y-5"
+              onSubmitCompleted$={() => {
+                if (createAction.value?.success || updateAction.value?.success) {
+                  showAddForm.value = false;
+                  editingExpo.value = null;
+                  flyerUrlSig.value = "";
+                }
+              }}
+            >
+              {editingExpo.value && <input type="hidden" name="id" value={editingExpo.value.id} />}
+              {/* Hidden field para el flyer URL */}
+              <input type="hidden" name="flyerUrl" value={flyerUrlSig.value} />
+
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label class="mb-1 block text-sm font-semibold text-gray-700">Título de la Exposición</label>
-                  <Input name="titulo" placeholder="Ej: Renacimiento Moderno" required />
+                  <Input name="titulo" placeholder="Ej: Renacimiento Moderno" value={editingExpo.value?.titulo || ''} required />
                 </div>
                 <div>
                   <label class="mb-1 block text-sm font-semibold text-gray-700">Artista</label>
-                  <Input name="nombre_artista" placeholder="Nombre del artista" required />
+                  <Input name="nombre_artista" placeholder="Nombre del artista" value={editingExpo.value?.nombre_artista || ''} required />
                 </div>
                 <div>
                   <label class="mb-1 block text-sm font-semibold text-gray-700">Día/Fecha de Inauguración</label>
-                  <Input name="fecha_inauguracion" placeholder="Ej: Viernes 20, 19hs" required />
+                  <Input name="fecha_inauguracion" placeholder="Ej: Viernes 20, 19hs" value={editingExpo.value?.fecha_inauguracion || ''} required />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-semibold text-gray-700">Fecha de Inicio (Desde cuándo)</label>
+                  <Input type="date" name="fecha_inicio" value={editingExpo.value?.fecha_inicio || ''} required />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-semibold text-gray-700">Fecha de Cierre (Hasta cuándo)</label>
+                  <Input type="date" name="fecha_fin" value={editingExpo.value?.fecha_fin || ''} required />
                 </div>
                 <div>
                   <label class="mb-1 block text-sm font-semibold text-gray-700">Contacto Artista</label>
-                  <Input name="contacto_artista" placeholder="Email o teléfono" required />
+                  <Input name="contacto_artista" placeholder="Email o teléfono" value={editingExpo.value?.contacto_artista || ''} required />
                 </div>
               </div>
+
+              {/* Flyer de Presentación */}
+              <div>
+                <ImageUploader
+                  label="Flyer de Presentación (opcional)"
+                  currentImageUrl={flyerUrlSig.value || undefined}
+                  onUploadCompleted$={(url) => {
+                    flyerUrlSig.value = url;
+                  }}
+                />
+                <p class="mt-1.5 text-xs text-gray-400 italic">
+                  Este flyer se mostrará en la página pública de la exposición.
+                </p>
+              </div>
+
               <div class="flex justify-end gap-2">
-                <Button type="button" variant="ghost" onClick$={() => (showAddForm.value = false)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick$={() => {
+                    showAddForm.value = false;
+                    editingExpo.value = null;
+                    flyerUrlSig.value = "";
+                  }}
+                >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={createAction.isRunning}>
-                  {createAction.isRunning ? "Guardando..." : "Guardar Exposición"}
+                <Button type="submit" disabled={createAction.isRunning || updateAction.isRunning}>
+                  {createAction.isRunning || updateAction.isRunning
+                    ? "Guardando..."
+                    : editingExpo.value
+                      ? "Actualizar Exposición"
+                      : "Guardar Exposición"}
                 </Button>
               </div>
             </Form>
@@ -115,8 +207,10 @@ export default component$(() => {
             <table class="hidden w-full text-left text-sm text-gray-600 md:table">
               <thead class="bg-gray-50 text-xs uppercase text-gray-500">
                 <tr>
+                  <th class="px-4 py-4 font-semibold">Flyer</th>
                   <th class="px-4 py-4 font-semibold">Exposición</th>
                   <th class="px-4 py-4 font-semibold">Inauguración</th>
+                  <th class="px-4 py-4 font-semibold">Vigencia</th>
                   <th class="px-4 py-4 font-semibold">Contacto</th>
                   <th class="px-4 py-4 text-right font-semibold">Acciones</th>
                 </tr>
@@ -124,6 +218,22 @@ export default component$(() => {
               <tbody class="divide-y divide-gray-200">
                 {data.value.map((expo) => (
                   <tr key={expo.id} class="transition-colors hover:bg-gray-50">
+                    <td class="px-4 py-3 w-16">
+                      {expo.flyerUrl ? (
+                        <img
+                          src={expo.flyerUrl}
+                          alt={`Flyer de ${expo.titulo}`}
+                          class="h-14 w-10 rounded-md object-cover shadow-sm border border-gray-200"
+                          width="40"
+                          height="56"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div class="flex h-14 w-10 items-center justify-center rounded-md border border-dashed border-gray-200 bg-gray-50">
+                          <LuPalette class="h-4 w-4 text-gray-300" />
+                        </div>
+                      )}
+                    </td>
                     <td class="px-4 py-4">
                       <div class="font-bold text-gray-900">{expo.titulo}</div>
                       <div class="text-xs text-gray-500">Artista: {expo.nombre_artista}</div>
@@ -131,11 +241,27 @@ export default component$(() => {
                     <td class="px-4 py-4">
                       {expo.fecha_inauguracion}
                     </td>
+                    <td class="px-4 py-4 text-xs font-semibold text-gray-700">
+                      <div>Desde: {expo.fecha_inicio || "Sin fecha"}</div>
+                      <div class="mt-0.5">Hasta: {expo.fecha_fin || "Sin fecha"}</div>
+                    </td>
                     <td class="px-4 py-4">
                       <div class="text-xs">{expo.contacto_artista}</div>
                     </td>
                     <td class="px-4 py-4 text-right">
                       <div class="flex justify-end gap-2 text-gray-400">
+                        <button
+                          type="button"
+                          onClick$={() => {
+                            editingExpo.value = expo;
+                            showAddForm.value = true;
+                            flyerUrlSig.value = expo.flyerUrl || "";
+                          }}
+                          class="inline-block rounded-md bg-amber-50 p-2 text-amber-600 transition-colors hover:bg-amber-100 hover:text-amber-900 shadow-sm"
+                          title="Editar detalles de la exposición"
+                        >
+                          <LuPencil class="h-4 w-4" />
+                        </button>
                         <a
                           href={`/admin/exposiciones/${expo.id}`}
                           class="inline-block rounded-md bg-indigo-50 p-2 text-indigo-600 transition-colors hover:bg-indigo-100 hover:text-indigo-900 shadow-sm"
@@ -170,24 +296,52 @@ export default component$(() => {
               {data.value.map((expo) => (
                 <div key={expo.id} class="p-4 space-y-3">
                   <div class="flex items-start justify-between gap-4">
+                    {expo.flyerUrl && (
+                      <img
+                        src={expo.flyerUrl}
+                        alt={`Flyer de ${expo.titulo}`}
+                        class="h-20 w-14 shrink-0 rounded-lg object-cover shadow border border-gray-200"
+                        width="56"
+                        height="80"
+                        loading="lazy"
+                      />
+                    )}
                     <div class="min-w-0 flex-1">
                       <h4 class="font-bold text-gray-900 leading-tight">{expo.titulo}</h4>
                       <p class="mt-0.5 text-xs text-green-600 font-medium">Artista: {expo.nombre_artista}</p>
                       <div class="mt-2 flex flex-col gap-1 text-[11px] text-gray-500">
-                        <div class="flex items-center gap-1.5 underline decoration-gray-200 underline-offset-2">
-                           {expo.fecha_inauguracion}
+                        <div>
+                          <strong>Inauguración:</strong> {expo.fecha_inauguracion}
+                        </div>
+                        <div>
+                          <strong>Desde:</strong> {expo.fecha_inicio || "Sin fecha"}
+                        </div>
+                        <div>
+                          <strong>Hasta:</strong> {expo.fecha_fin || "Sin fecha"}
                         </div>
                         <div class="text-gray-400 italic">{expo.contacto_artista}</div>
                       </div>
                     </div>
                   </div>
                   <div class="flex items-center gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick$={() => {
+                        editingExpo.value = expo;
+                        showAddForm.value = true;
+                        flyerUrlSig.value = expo.flyerUrl || "";
+                      }}
+                      class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-amber-50 py-2.5 text-xs font-bold text-amber-600 active:bg-amber-100"
+                    >
+                      <LuPencil class="h-4 w-4" />
+                      Editar
+                    </button>
                     <a
                       href={`/admin/exposiciones/${expo.id}`}
-                      class="flex flex-2 items-center justify-center gap-2 rounded-lg bg-indigo-50 py-2.5 text-xs font-bold text-indigo-600 active:bg-indigo-100"
+                      class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-indigo-50 py-2.5 text-xs font-bold text-indigo-600 active:bg-indigo-100"
                     >
                       <LuImagePlus class="h-4 w-4" />
-                      Gestionar Obras
+                      Obras
                     </a>
                     <Form
                       action={deleteAction}

@@ -71,8 +71,8 @@ export const Services = component$(() => {
             </div>
           </Link>
 
-          {/* Card 3: Eventos */}
-          <Link href={`/${currentLocale}/eventos`} class="group">
+          {/* Card 3: Exposiciones */}
+          <Link href={`/${currentLocale}/exposiciones`} class="group">
             <div class="relative h-full overflow-hidden rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-green-200 hover:shadow-2xl">
               <div class="absolute top-0 right-0 -mt-16 -mr-16 h-32 w-32 rounded-bl-full bg-green-50 transition-transform group-hover:scale-110"></div>
               <div class="relative z-10">

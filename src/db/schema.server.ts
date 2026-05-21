@@ -235,6 +235,9 @@ export const exposiciones = sqliteTable("exposiciones", {
   fecha_inauguracion: text("fecha_inauguracion").notNull(),
   nombre_artista: text("nombre_artista").notNull(),
   contacto_artista: text("contacto_artista").notNull(),
+  flyerUrl: text("flyer_url"),
+  fecha_inicio: text("fecha_inicio").notNull().default(""),
+  fecha_fin: text("fecha_fin").notNull().default(""),
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 

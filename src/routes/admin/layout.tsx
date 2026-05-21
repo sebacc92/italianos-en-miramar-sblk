@@ -16,7 +16,8 @@ import {
   LuX,
   LuBot,
   LuMessageSquare,
-  LuCalendarDays
+  LuCalendarDays,
+  LuUserPlus
 } from "@qwikest/icons/lucide";
 
 const navLinks = [
@@ -80,6 +81,11 @@ const navLinks = [
     href: "/admin/reservas",
     label: "Reservas de Salones",
     icon: <LuCalendarDays class="h-5 w-5" />,
+  },
+  {
+    href: "/admin/asociarse",
+    label: "Solicitudes de Socios",
+    icon: <LuUserPlus class="h-5 w-5" />,
   },
 ];
 
@@ -154,6 +160,9 @@ export default component$(() => {
       disabled = true;
     }
     if (link.href === '/admin/reservas' && !isSalonAdmin) {
+      disabled = true;
+    }
+    if (link.href === '/admin/asociarse' && !isSalonAdmin) {
       disabled = true;
     }
     return { ...link, disabled };
