@@ -1,5 +1,5 @@
-import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
-import { LuX, LuInfo, LuSparkles, LuMousePointer } from "@qwikest/icons/lucide";
+import { component$, useSignal, useVisibleTask$, useComputed$, $ } from "@builder.io/qwik";
+import { LuX, LuInfo, LuSparkles, LuMousePointer, LuChevronLeft, LuChevronRight } from "@qwikest/icons/lucide";
 
 interface Obra {
   id: string;
@@ -20,63 +20,120 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
   const loadedCount = useSignal<number>(0);
   const isLoaded = useSignal<boolean>(false);
   const selectedObra = useSignal<Obra | null>(null);
+  const hasWebGL = useSignal<boolean | null>(null);
+
+  // Computed signal for selected painting index in fallback carousel
+  const currentIndex = useComputed$(() => {
+    if (!selectedObra.value) return 0;
+    const idx = obras.findIndex((o) => o.id === selectedObra.value?.id);
+    return idx >= 0 ? idx : 0;
+  });
 
   // Initialize 3D scene inside the visible task (client-side only)
   useVisibleTask$(async ({ cleanup }) => {
+    // 1. WebGL Availability Pre-check
+    const checkWebGLAvailability = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        return !!(
+          window.WebGLRenderingContext &&
+          (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+        );
+      } catch (e) {
+        return false;
+      }
+    };
+
+    if (!checkWebGLAvailability()) {
+      console.warn("WebGL not supported or disabled in this browser. Activating premium CSS 3D fallback mode.");
+      hasWebGL.value = false;
+      isLoaded.value = true;
+      if (obras.length > 0) {
+        selectedObra.value = obras[0];
+      }
+      return;
+    }
+
     if (!canvasRef.value) return;
 
-    // Dynamically import Three.js to keep initial bundle sizes low
-    const THREE = await import("three");
+    // 2. Load Three.js dynamically
+    let THREE;
+    try {
+      THREE = await import("three");
+    } catch (err) {
+      console.error("Three.js dynamic import failed:", err);
+      hasWebGL.value = false;
+      isLoaded.value = true;
+      if (obras.length > 0) {
+        selectedObra.value = obras[0];
+      }
+      return;
+    }
 
     const container = canvasRef.value.parentElement;
     if (!container) return;
 
-    // 1. Scene, Camera & Renderer
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a0a);
-    scene.fog = new THREE.FogExp2(0x0a0a0a, 0.015);
+    // 3. Scene & Camera & WebGL Renderer with graceful error handling
+    let scene: any;
+    let camera: any;
+    let renderer: any;
 
-    const camera = new THREE.PerspectiveCamera(
-      70,
-      container.clientWidth / container.clientHeight,
-      0.1,
-      1000
-    );
-    camera.position.set(0, 0, 0); // Stand in the exact center of the room
+    try {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0a0a0a);
+      scene.fog = new THREE.FogExp2(0x0a0a0a, 0.015);
 
-    const renderer = new THREE.WebGLRenderer({
-      canvas: canvasRef.value,
-      antialias: true,
-      alpha: false,
-    });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      camera = new THREE.PerspectiveCamera(
+        70,
+        container.clientWidth / container.clientHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(0, 0, 0); // Center of the room
 
-    // 2. Lighting
+      renderer = new THREE.WebGLRenderer({
+        canvas: canvasRef.value,
+        antialias: true,
+        alpha: false,
+      });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      hasWebGL.value = true;
+    } catch (err) {
+      console.error("WebGL context creation caught exception:", err);
+      hasWebGL.value = false;
+      isLoaded.value = true;
+      if (obras.length > 0) {
+        selectedObra.value = obras[0];
+      }
+      return;
+    }
+
+    // 4. Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
     scene.add(ambientLight);
 
-    // Warm museum sky ambient light
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x111111, 0.2);
     scene.add(hemiLight);
 
-    // 3. Room Geometry (Floor, Ceiling, Walls)
+    // 5. Room Geometry (Floor, Ceiling, Walls)
     const wallMaterial = new THREE.MeshStandardMaterial({
-      color: 0xeeece8, // Warm off-white museum concrete wall
+      color: 0xeeece8, // Warm off-white
       roughness: 0.9,
       metalness: 0.05,
     });
 
     const floorMaterial = new THREE.MeshStandardMaterial({
-      color: 0x2b1d16, // Premium gloss dark oak wood floor
+      color: 0x2b1d16, // Dark oak
       roughness: 0.35,
       metalness: 0.1,
     });
 
     const ceilingMaterial = new THREE.MeshStandardMaterial({
-      color: 0x141414, // Dark modern ceiling
+      color: 0x141414,
       roughness: 0.9,
     });
 
@@ -117,30 +174,26 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
     wallW.receiveShadow = true;
     scene.add(wallW);
 
-    // 4. Painting distribution & Loading
+    // 6. Painting Distribution & Texture Loader
     const textureLoader = new THREE.TextureLoader();
     const works = obras;
     const numPaintings = works.length;
 
-    // Distribute paintings across the 4 walls (0: N, 1: E, 2: S, 3: W)
     const wallGroups: Obra[][] = [[], [], [], []];
     works.forEach((obra, idx) => {
       wallGroups[idx % 4].push(obra);
     });
 
-    const clickableObjects: THREE.Object3D[] = [];
+    const clickableObjects: any[] = [];
 
-    const handleTextureLoaded = (texture: THREE.Texture, obra: Obra, wallIdx: number, spacing: number, j: number) => {
-      // Retain natural aspect ratio of the painting
+    const handleTextureLoaded = (texture: any, obra: Obra, wallIdx: number, spacing: number, j: number) => {
       const img = texture.image;
       const aspectRatio = img.width / img.height;
       const height = 4.2;
       const width = height * aspectRatio;
 
-      // Create painting group
       const paintingGroup = new THREE.Group();
 
-      // Painting canvas mesh
       const paintingGeometry = new THREE.PlaneGeometry(width, height);
       const paintingMaterial = new THREE.MeshBasicMaterial({
         map: texture,
@@ -151,12 +204,11 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       paintingGroup.add(paintingMesh);
       clickableObjects.push(paintingMesh);
 
-      // 3D Box Frame behind the canvas
       const frameMargin = 0.28;
       const frameThickness = 0.12;
       const frameGeometry = new THREE.BoxGeometry(width + frameMargin, height + frameMargin, frameThickness);
       const frameMaterial = new THREE.MeshStandardMaterial({
-        color: 0x1c1a17, // Elegant obsidian wood framing
+        color: 0x1c1a17,
         roughness: 0.7,
         metalness: 0.1,
       });
@@ -165,27 +217,22 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       frameMesh.castShadow = true;
       paintingGroup.add(frameMesh);
 
-      // Positioning coordinates
       const posAlongWall = -15 + spacing * (j + 1);
       let posX = 0, posZ = 0, rotY = 0;
 
       if (wallIdx === 0) {
-        // North Wall
         posX = posAlongWall;
         posZ = -14.85;
         rotY = 0;
       } else if (wallIdx === 1) {
-        // East Wall
         posX = 14.85;
         posZ = posAlongWall;
         rotY = -Math.PI / 2;
       } else if (wallIdx === 2) {
-        // South Wall
         posX = -posAlongWall;
         posZ = 14.85;
         rotY = Math.PI;
       } else if (wallIdx === 3) {
-        // West Wall
         posX = -14.85;
         posZ = -posAlongWall;
         rotY = Math.PI / 2;
@@ -195,15 +242,13 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       paintingGroup.rotation.y = rotY;
       scene.add(paintingGroup);
 
-      // Focused museum spotlight above the painting
-      const spotlight = new THREE.SpotLight(0xfff7e6, 12); // Slightly warm white
-      // Place spotlight slightly in front and above the painting
+      // Museum spotlight above
+      const spotlight = new THREE.SpotLight(0xfff7e6, 12);
       const lightOffsetDist = 1.8;
       const lightX = posX + (wallIdx === 1 ? -lightOffsetDist : wallIdx === 3 ? lightOffsetDist : 0);
       const lightZ = posZ + (wallIdx === 0 ? lightOffsetDist : wallIdx === 2 ? -lightOffsetDist : 0);
       spotlight.position.set(lightX, 4.2, lightZ);
 
-      // Spotlight points directly at the painting
       const targetObj = new THREE.Object3D();
       targetObj.position.set(posX, 0.4, posZ);
       scene.add(targetObj);
@@ -218,21 +263,17 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       spotlight.shadow.mapSize.height = 512;
       scene.add(spotlight);
 
-      // Soft downlight above it
       const pointLight = new THREE.PointLight(0xfff4d6, 0.4, 4);
       pointLight.position.set(posX, 0.8, posZ + (wallIdx === 0 ? 0.3 : wallIdx === 2 ? -0.3 : 0));
       scene.add(pointLight);
 
-      // Track loaded count
       loadedCount.value++;
       if (loadedCount.value === numPaintings) {
         isLoaded.value = true;
-        // Select first painting by default on loading
         selectedObra.value = works[0];
       }
     };
 
-    // Load each painting texture
     wallGroups.forEach((group, wallIdx) => {
       const M = group.length;
       const spacing = 30 / (M + 1);
@@ -242,7 +283,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
           (tex) => handleTextureLoaded(tex, obra, wallIdx, spacing, j),
           undefined,
           (err) => {
-            console.error("Failed to load painting texture", err);
+            console.error("Failed to load texture", err);
             loadedCount.value++;
             if (loadedCount.value === numPaintings) {
               isLoaded.value = true;
@@ -252,12 +293,11 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       });
     });
 
-    // If there are zero paintings, mark loaded immediately
     if (numPaintings === 0) {
       isLoaded.value = true;
     }
 
-    // 5. Look Around Drag & Touch Controls
+    // 7. Spherical Navigation Controls
     let isUserInteracting = false;
     let onPointerDownMouseX = 0, onPointerDownMouseY = 0;
     let lon = 0, onPointerDownLon = 0;
@@ -280,7 +320,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
         const deltaY = event.clientY - onPointerDownMouseY;
         lon = onPointerDownLon - deltaX * 0.16;
         lat = onPointerDownLat + deltaY * 0.16;
-        lat = Math.max(-80, Math.min(80, lat)); // Clamp vertical rotation
+        lat = Math.max(-80, Math.min(80, lat));
       }
     };
 
@@ -289,12 +329,11 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       isUserInteracting = false;
     };
 
-    // Listen to drag events on the canvas
     canvasRef.value.addEventListener("pointerdown", onPointerDown);
     canvasRef.value.addEventListener("pointermove", onPointerMove);
     canvasRef.value.addEventListener("pointerup", onPointerUp);
 
-    // 6. Click/Raycast for painting selection
+    // 8. Raycasting Click Selection
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
@@ -318,7 +357,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
 
     canvasRef.value.addEventListener("click", onCanvasClick);
 
-    // 7. Resize Handler
+    // 9. Resize Handling
     const onResize = () => {
       if (!canvasRef.value || !container) return;
       camera.aspect = container.clientWidth / container.clientHeight;
@@ -327,13 +366,12 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
     };
     window.addEventListener("resize", onResize);
 
-    // 8. Animation & Rendering loop
+    // 10. Animation Loop
     let animationFrameId: number;
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      // Smooth camera interpolation (lerping)
       currentLon += (lon - currentLon) * 0.12;
       currentLat += (lat - currentLat) * 0.12;
 
@@ -351,66 +389,183 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
 
     animate();
 
-    // Clean up Three.js objects and events on component unmount
+    // 11. Cleanup registration
     cleanup(() => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId !== undefined) cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", onResize);
       if (canvasRef.value) {
-        canvasRef.value.removeEventListener("pointerdown", onPointerDown);
-        canvasRef.value.removeEventListener("pointermove", onPointerMove);
-        canvasRef.value.removeEventListener("pointerup", onPointerUp);
-        canvasRef.value.removeEventListener("click", onCanvasClick);
+        try {
+          canvasRef.value.removeEventListener("pointerdown", onPointerDown);
+          canvasRef.value.removeEventListener("pointermove", onPointerMove);
+          canvasRef.value.removeEventListener("pointerup", onPointerUp);
+          canvasRef.value.removeEventListener("click", onCanvasClick);
+        } catch (e) {
+          // ignore
+        }
       }
-      scene.clear();
-      renderer.dispose();
+      if (scene) scene.clear();
+      if (renderer) renderer.dispose();
     });
   });
 
   return (
     <div class="fixed inset-0 z-50 flex flex-col bg-neutral-950 text-white select-none overflow-hidden animate-in fade-in duration-300">
-      {/* 3D Render Canvas Container */}
-      <div class="relative flex-1 w-full h-full bg-[#0a0a0a]">
-        <canvas
-          ref={canvasRef}
-          class="w-full h-full block cursor-grab active:cursor-grabbing touch-none"
-        />
+      
+      {/* WebGL Render Mode Container */}
+      {hasWebGL.value !== false && (
+        <div class="relative flex-1 w-full h-full bg-[#0a0a0a]">
+          <canvas
+            ref={canvasRef}
+            class="w-full h-full block cursor-grab active:cursor-grabbing touch-none"
+          />
 
-        {/* Loading Screen Overlay */}
-        {!isLoaded.value && (
-          <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-neutral-950/90 backdrop-blur-md">
-            <div class="h-16 w-16 mb-4 flex items-center justify-center rounded-2xl bg-white/10 border border-white/20 animate-spin">
-              <LuSparkles class="h-8 w-8 text-amber-400" />
+          {/* Loading Screen Overlay */}
+          {!isLoaded.value && (
+            <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-neutral-950/90 backdrop-blur-md">
+              <div class="h-16 w-16 mb-4 flex items-center justify-center rounded-2xl bg-white/10 border border-white/20 animate-spin">
+                <LuSparkles class="h-8 w-8 text-amber-400" />
+              </div>
+              <h4 class="text-xl font-bold tracking-tight text-white mb-2">Montando Sala 3D</h4>
+              <p class="text-sm text-neutral-400">
+                Colgando obras: {loadedCount.value} de {obras.length}
+              </p>
+              <div class="w-48 bg-neutral-800 h-1.5 rounded-full overflow-hidden mt-4">
+                <div
+                  class="bg-amber-400 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${(loadedCount.value / (obras.length || 1)) * 100}%` }}
+                />
+              </div>
             </div>
-            <h4 class="text-xl font-bold tracking-tight text-white mb-2">Montando Sala 3D</h4>
-            <p class="text-sm text-neutral-400">
-              Colgando obras: {loadedCount.value} de {obras.length}
-            </p>
-            <div class="w-48 bg-neutral-800 h-1.5 rounded-full overflow-hidden mt-4">
-              <div
-                class="bg-amber-400 h-full rounded-full transition-all duration-300"
-                style={{ width: `${(loadedCount.value / (obras.length || 1)) * 100}%` }}
-              />
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Close Button */}
-        <button
-          onClick$={onClose$}
-          class="absolute top-5 right-5 z-30 p-3 rounded-full bg-neutral-900/80 hover:bg-neutral-800 text-neutral-200 hover:text-white border border-neutral-800/80 backdrop-blur-md hover:scale-105 shadow-xl transition-all duration-300"
-          title="Salir del Recorrido 3D"
+          {/* Interactive Pointer Look Prompt */}
+          {isLoaded.value && (
+            <div class="absolute top-5 left-5 z-10 hidden sm:flex items-center gap-2 bg-neutral-900/60 border border-neutral-800/50 backdrop-blur-md px-4 py-2 rounded-full text-xs font-semibold text-neutral-300">
+              <LuMousePointer class="h-4.5 w-4.5 text-amber-400 animate-pulse" />
+              <span>Arrastra con el mouse para girar 360° la cámara</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Graceful Fallback Mode: Premium CSS 3D Perspective Cover Flow Carousel */}
+      {hasWebGL.value === false && (
+        <div 
+          class="flex-1 w-full flex flex-col items-center justify-center bg-stone-950 px-4 md:px-8 relative overflow-hidden" 
+          style="perspective: 1200px;"
         >
-          <LuX class="h-6 w-6" />
-        </button>
+          {/* Ambient spotlight pool on the background */}
+          <div class="absolute w-[500px] h-[500px] rounded-full bg-amber-500/5 blur-[120px] pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
 
-        {/* Interactive Pointer Look Prompt */}
-        {isLoaded.value && (
-          <div class="absolute top-5 left-5 z-10 hidden sm:flex items-center gap-2 bg-neutral-900/60 border border-neutral-800/50 backdrop-blur-md px-4 py-2 rounded-full text-xs font-semibold text-neutral-300">
-            <LuMousePointer class="h-4.5 w-4.5 text-amber-400 animate-pulse" />
-            <span>Arrastra con el mouse para girar 360° la cámara</span>
+          {/* Elegant alert badge */}
+          <div class="absolute top-5 left-5 z-10 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 backdrop-blur-md px-4 py-2 rounded-full text-[10px] sm:text-xs font-semibold text-amber-400">
+            <LuInfo class="h-4 w-4 animate-pulse" />
+            <span>Modo de Compatibilidad 3D Activo (CSS Perspective)</span>
           </div>
-        )}
-      </div>
+
+          {/* CSS 3D Perspective Container */}
+          <div class="relative w-full max-w-4xl h-[40vh] sm:h-[45vh] flex items-center justify-center mt-6" style="transform-style: preserve-3d;">
+            {obras.map((obra, idx) => {
+              const offset = idx - currentIndex.value;
+              const absOffset = Math.abs(offset);
+
+              // Render only nearby paintings to keep DOM lean
+              if (absOffset > 2) return null;
+
+              // Calculate 3D styles
+              let transformStr = "";
+              const zIndex = 10 - absOffset;
+              let opacityStr = "1";
+
+              if (offset === 0) {
+                transformStr = "translate3d(0, 0, 0) rotateY(0deg) scale(1)";
+                opacityStr = "1";
+              } else if (offset === -1) {
+                transformStr = "translate3d(-200px, 0, -150px) rotateY(38deg) scale(0.85)";
+                opacityStr = "0.55";
+              } else if (offset === 1) {
+                transformStr = "translate3d(200px, 0, -150px) rotateY(-38deg) scale(0.85)";
+                opacityStr = "0.55";
+              } else if (offset === -2) {
+                transformStr = "translate3d(-360px, 0, -300px) rotateY(48deg) scale(0.72)";
+                opacityStr = "0.2";
+              } else if (offset === 2) {
+                transformStr = "translate3d(360px, 0, -300px) rotateY(-48deg) scale(0.72)";
+                opacityStr = "0.2";
+              }
+
+              return (
+                <div
+                  key={obra.id}
+                  onClick$={() => {
+                    selectedObra.value = obra;
+                  }}
+                  class={[
+                    "absolute w-[200px] sm:w-[280px] aspect-[3/4] sm:aspect-4/3 rounded-2xl overflow-hidden border border-stone-800 shadow-2xl transition-all duration-500 bg-stone-900 cursor-pointer select-none",
+                    offset === 0 ? "border-amber-400/50 shadow-[0_20px_50px_rgba(245,158,11,0.15)]" : "hover:opacity-90"
+                  ]}
+                  style={{
+                    transform: transformStr,
+                    zIndex: zIndex,
+                    opacity: opacityStr,
+                    transformOrigin: "center center"
+                  }}
+                >
+                  {/* Spotlight reflection */}
+                  {offset === 0 && (
+                    <div class="absolute inset-x-0 top-0 h-[60%] bg-gradient-to-b from-white/8 to-transparent pointer-events-none z-10"></div>
+                  )}
+                  <img
+                    src={obra.image_url}
+                    alt={obra.titulo_obra || "Obra"}
+                    class="w-full h-full object-cover pointer-events-none"
+                  />
+                  {/* Painting shadow frame */}
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Slide Navigation Buttons */}
+          <div class="flex items-center gap-6 mt-8 sm:mt-10 z-10">
+            <button
+              onClick$={() => {
+                const prevIdx = (currentIndex.value - 1 + obras.length) % obras.length;
+                selectedObra.value = obras[prevIdx];
+              }}
+              class="p-3 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-neutral-800/80 hover:text-amber-400 hover:scale-105 active:scale-95 shadow-xl transition-all cursor-pointer"
+              title="Anterior"
+            >
+              <LuChevronLeft class="h-5 w-5" />
+            </button>
+            
+            <span class="text-neutral-400 text-xs font-semibold tracking-wider bg-neutral-900/60 px-4 py-1.5 rounded-full border border-neutral-800/40">
+              {currentIndex.value + 1} / {obras.length}
+            </span>
+
+            <button
+              onClick$={() => {
+                const nextIdx = (currentIndex.value + 1) % obras.length;
+                selectedObra.value = obras[nextIdx];
+              }}
+              class="p-3 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-neutral-800/80 hover:text-amber-400 hover:scale-105 active:scale-95 shadow-xl transition-all cursor-pointer"
+              title="Siguiente"
+            >
+              <LuChevronRight class="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Close Button */}
+      <button
+        onClick$={onClose$}
+        class="absolute top-5 right-5 z-30 p-3 rounded-full bg-neutral-900/80 hover:bg-neutral-800 text-neutral-200 hover:text-white border border-neutral-800/80 backdrop-blur-md hover:scale-105 shadow-xl transition-all duration-300 cursor-pointer"
+        title="Salir del Recorrido 3D"
+      >
+        <LuX class="h-6 w-6" />
+      </button>
 
       {/* Selected Painting Detail Banner Overlay */}
       {isLoaded.value && selectedObra.value && (
@@ -419,7 +574,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
             <span class="text-amber-400 text-[10px] uppercase font-black tracking-widest bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20 mb-3 inline-block">
               Obra de {nombreArtista}
             </span>
-            <h4 class="text-2xl font-black tracking-tight text-white mb-2 leading-tight">
+            <h4 class="text-xl sm:text-2xl font-black tracking-tight text-white mb-2 leading-tight">
               {selectedObra.value.titulo_obra || "Sin título"}
             </h4>
             {selectedObra.value.descripcion_obra ? (
@@ -432,7 +587,11 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
             
             <div class="mt-4 flex items-center justify-center gap-3 text-[10px] text-neutral-500 font-semibold bg-neutral-900/40 border border-neutral-800/40 px-4 py-1.5 rounded-full w-fit mx-auto">
               <LuInfo class="h-3.5 w-3.5 text-amber-400/80" />
-              <span>Haz clic en otra pintura en las paredes para ver sus detalles</span>
+              <span>
+                {hasWebGL.value === false
+                  ? "Usa las flechas o haz clic en las miniaturas de los costados para navegar"
+                  : "Haz clic en otra pintura en las paredes para ver sus detalles"}
+              </span>
             </div>
           </div>
         </div>
