@@ -22,16 +22,53 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
   const selectedObra = useSignal<Obra | null>(null);
   const hasWebGL = useSignal<boolean | null>(null);
 
-  // Computed signal for selected painting index in fallback carousel
-  const currentIndex = useComputed$(() => {
-    if (!selectedObra.value) return 0;
-    const idx = obras.findIndex((o) => o.id === selectedObra.value?.id);
-    return idx >= 0 ? idx : 0;
+  // CSS 3D Room looking signals (GTA/First-person style camera angles)
+  const lon = useSignal<number>(0); // Left/Right camera angle
+  const lat = useSignal<number>(0); // Up/Down camera angle
+  const isDragging = useSignal<boolean>(false);
+
+  // Drag-to-look coordinates state (for CSS 3D room)
+  const startX = useSignal<number>(0);
+  const startY = useSignal<number>(0);
+  const startLon = useSignal<number>(0);
+  const startLat = useSignal<number>(0);
+
+  // Divide paintings into 4 wall groups (North, East, South, West)
+  const wallGroups = useComputed$(() => {
+    const groups: Obra[][] = [[], [], [], []];
+    obras.forEach((obra, idx) => {
+      groups[idx % 4].push(obra);
+    });
+    return groups;
   });
 
-  // Initialize 3D scene inside the visible task (client-side only)
+  // Handle pointer down (drag-to-look camera start)
+  const onCSSPointerDown = $((e: PointerEvent) => {
+    isDragging.value = true;
+    startX.value = e.clientX;
+    startY.value = e.clientY;
+    startLon.value = lon.value;
+    startLat.value = lat.value;
+  });
+
+  // Handle pointer move (drag-to-look look around camera)
+  const onCSSPointerMove = $((e: PointerEvent) => {
+    if (!isDragging.value) return;
+    const deltaX = e.clientX - startX.value;
+    const deltaY = e.clientY - startY.value;
+
+    // Camera look around logic (inverse rotation of the room to simulate head rotation)
+    lon.value = startLon.value - deltaX * 0.18;
+    lat.value = Math.max(-45, Math.min(45, startLat.value + deltaY * 0.18));
+  });
+
+  // Handle pointer up (drag-to-look camera end)
+  const onCSSPointerUp = $((e: PointerEvent) => {
+    isDragging.value = false;
+  });
+
+  // Initialize WebGL Three.js Room (if supported)
   useVisibleTask$(async ({ cleanup }) => {
-    // 1. WebGL Availability Pre-check
     const checkWebGLAvailability = () => {
       try {
         const canvas = document.createElement("canvas");
@@ -45,7 +82,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
     };
 
     if (!checkWebGLAvailability()) {
-      console.warn("WebGL not supported or disabled in this browser. Activating premium CSS 3D fallback mode.");
+      console.warn("WebGL not supported or disabled. Launching premium CSS 3D Room Simulation.");
       hasWebGL.value = false;
       isLoaded.value = true;
       if (obras.length > 0) {
@@ -56,7 +93,6 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
 
     if (!canvasRef.value) return;
 
-    // 2. Load Three.js dynamically
     let THREE;
     try {
       THREE = await import("three");
@@ -73,7 +109,6 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
     const container = canvasRef.value.parentElement;
     if (!container) return;
 
-    // 3. Scene & Camera & WebGL Renderer with graceful error handling
     let scene: any;
     let camera: any;
     let renderer: any;
@@ -89,7 +124,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
         0.1,
         1000
       );
-      camera.position.set(0, 0, 0); // Center of the room
+      camera.position.set(0, 0, 0); // Stand in the exact center of the room
 
       renderer = new THREE.WebGLRenderer({
         canvas: canvasRef.value,
@@ -103,7 +138,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
 
       hasWebGL.value = true;
     } catch (err) {
-      console.error("WebGL context creation caught exception:", err);
+      console.error("WebGL context creation exception:", err);
       hasWebGL.value = false;
       isLoaded.value = true;
       if (obras.length > 0) {
@@ -112,22 +147,22 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       return;
     }
 
-    // 4. Lighting
+    // Light Setup
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
     scene.add(ambientLight);
 
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x111111, 0.2);
     scene.add(hemiLight);
 
-    // 5. Room Geometry (Floor, Ceiling, Walls)
+    // Standard materials for WebGL Room
     const wallMaterial = new THREE.MeshStandardMaterial({
-      color: 0xeeece8, // Warm off-white
+      color: 0xeeece8,
       roughness: 0.9,
       metalness: 0.05,
     });
 
     const floorMaterial = new THREE.MeshStandardMaterial({
-      color: 0x2b1d16, // Dark oak
+      color: 0x2b1d16,
       roughness: 0.35,
       metalness: 0.1,
     });
@@ -137,20 +172,20 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       roughness: 0.9,
     });
 
-    // Floor
+    // Floor Mesh
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), floorMaterial);
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -5;
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Ceiling
+    // Ceiling Mesh
     const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), ceilingMaterial);
     ceiling.rotation.x = Math.PI / 2;
     ceiling.position.y = 5;
     scene.add(ceiling);
 
-    // Walls
+    // 4 Walls
     const wallN = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), wallMaterial);
     wallN.position.set(0, 0, -14.9);
     wallN.receiveShadow = true;
@@ -174,16 +209,9 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
     wallW.receiveShadow = true;
     scene.add(wallW);
 
-    // 6. Painting Distribution & Texture Loader
     const textureLoader = new THREE.TextureLoader();
     const works = obras;
     const numPaintings = works.length;
-
-    const wallGroups: Obra[][] = [[], [], [], []];
-    works.forEach((obra, idx) => {
-      wallGroups[idx % 4].push(obra);
-    });
-
     const clickableObjects: any[] = [];
 
     const handleTextureLoaded = (texture: any, obra: Obra, wallIdx: number, spacing: number, j: number) => {
@@ -204,6 +232,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       paintingGroup.add(paintingMesh);
       clickableObjects.push(paintingMesh);
 
+      // Frame Geometry
       const frameMargin = 0.28;
       const frameThickness = 0.12;
       const frameGeometry = new THREE.BoxGeometry(width + frameMargin, height + frameMargin, frameThickness);
@@ -217,6 +246,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       frameMesh.castShadow = true;
       paintingGroup.add(frameMesh);
 
+      // Set spatial coordinates
       const posAlongWall = -15 + spacing * (j + 1);
       let posX = 0, posZ = 0, rotY = 0;
 
@@ -242,7 +272,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       paintingGroup.rotation.y = rotY;
       scene.add(paintingGroup);
 
-      // Museum spotlight above
+      // Spotlights for WebGL
       const spotlight = new THREE.SpotLight(0xfff7e6, 12);
       const lightOffsetDist = 1.8;
       const lightX = posX + (wallIdx === 1 ? -lightOffsetDist : wallIdx === 3 ? lightOffsetDist : 0);
@@ -274,7 +304,13 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       }
     };
 
-    wallGroups.forEach((group, wallIdx) => {
+    // Distribute WebGL textures
+    const wallGrps: Obra[][] = [[], [], [], []];
+    works.forEach((obra, idx) => {
+      wallGrps[idx % 4].push(obra);
+    });
+
+    wallGrps.forEach((group, wallIdx) => {
       const M = group.length;
       const spacing = 30 / (M + 1);
       group.forEach((obra, j) => {
@@ -297,11 +333,11 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       isLoaded.value = true;
     }
 
-    // 7. Spherical Navigation Controls
+    // Spherical Drag Coordinates (WebGL)
     let isUserInteracting = false;
     let onPointerDownMouseX = 0, onPointerDownMouseY = 0;
-    let lon = 0, onPointerDownLon = 0;
-    let lat = 0, onPointerDownLat = 0;
+    let webglLon = 0, onPointerDownLon = 0;
+    let webglLat = 0, onPointerDownLat = 0;
     let currentLon = 0, currentLat = 0;
 
     const onPointerDown = (event: PointerEvent) => {
@@ -309,8 +345,8 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       isUserInteracting = true;
       onPointerDownMouseX = event.clientX;
       onPointerDownMouseY = event.clientY;
-      onPointerDownLon = lon;
-      onPointerDownLat = lat;
+      onPointerDownLon = webglLon;
+      onPointerDownLat = webglLat;
     };
 
     const onPointerMove = (event: PointerEvent) => {
@@ -318,9 +354,13 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
       if (isUserInteracting === true) {
         const deltaX = event.clientX - onPointerDownMouseX;
         const deltaY = event.clientY - onPointerDownMouseY;
-        lon = onPointerDownLon - deltaX * 0.16;
-        lat = onPointerDownLat + deltaY * 0.16;
-        lat = Math.max(-80, Math.min(80, lat));
+        webglLon = onPointerDownLon - deltaX * 0.16;
+        webglLat = onPointerDownLat + deltaY * 0.16;
+        webglLat = Math.max(-80, Math.min(80, webglLat));
+
+        // Sync values with CSS 3D state so they stay aligned if fallback triggers
+        lon.value = webglLon;
+        lat.value = webglLat;
       }
     };
 
@@ -333,7 +373,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
     canvasRef.value.addEventListener("pointermove", onPointerMove);
     canvasRef.value.addEventListener("pointerup", onPointerUp);
 
-    // 8. Raycasting Click Selection
+    // Raycast Event (WebGL selection)
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
@@ -357,7 +397,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
 
     canvasRef.value.addEventListener("click", onCanvasClick);
 
-    // 9. Resize Handling
+    // Resize
     const onResize = () => {
       if (!canvasRef.value || !container) return;
       camera.aspect = container.clientWidth / container.clientHeight;
@@ -366,14 +406,14 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
     };
     window.addEventListener("resize", onResize);
 
-    // 10. Animation Loop
+    // Rendering Loop
     let animationFrameId: number;
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      currentLon += (lon - currentLon) * 0.12;
-      currentLat += (lat - currentLat) * 0.12;
+      currentLon += (webglLon - currentLon) * 0.12;
+      currentLat += (webglLat - currentLat) * 0.12;
 
       const phi = THREE.MathUtils.degToRad(90 - currentLat);
       const theta = THREE.MathUtils.degToRad(currentLon);
@@ -389,7 +429,6 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
 
     animate();
 
-    // 11. Cleanup registration
     cleanup(() => {
       if (animationFrameId !== undefined) cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", onResize);
@@ -411,7 +450,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
   return (
     <div class="fixed inset-0 z-50 flex flex-col bg-neutral-950 text-white select-none overflow-hidden animate-in fade-in duration-300">
       
-      {/* WebGL Render Mode Container */}
+      {/* 1. WebGL Room Mode */}
       {hasWebGL.value !== false && (
         <div class="relative flex-1 w-full h-full bg-[#0a0a0a]">
           <canvas
@@ -448,112 +487,202 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
         </div>
       )}
 
-      {/* Graceful Fallback Mode: Premium CSS 3D Perspective Cover Flow Carousel */}
+      {/* 2. Seamless CSS 3D Room Fallback (Full 3D Simulated Room Environment, NO WebGL needed) */}
       {hasWebGL.value === false && (
-        <div 
-          class="flex-1 w-full flex flex-col items-center justify-center bg-stone-950 px-4 md:px-8 relative overflow-hidden" 
-          style="perspective: 1200px;"
+        <div
+          class="flex-1 w-full relative overflow-hidden bg-[#0c0c0c] flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
+          style="perspective: 550px;"
+          onPointerDown$={onCSSPointerDown}
+          onPointerMove$={onCSSPointerMove}
+          onPointerUp$={onCSSPointerUp}
         >
-          {/* Ambient spotlight pool on the background */}
-          <div class="absolute w-[500px] h-[500px] rounded-full bg-amber-500/5 blur-[120px] pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
-
-          {/* Elegant alert badge */}
-          <div class="absolute top-5 left-5 z-10 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 backdrop-blur-md px-4 py-2 rounded-full text-[10px] sm:text-xs font-semibold text-amber-400">
-            <LuInfo class="h-4 w-4 animate-pulse" />
-            <span>Modo de Compatibilidad 3D Activo (CSS Perspective)</span>
+          {/* Compass / FPS Mode Notification */}
+          <div class="absolute top-5 left-5 z-30 flex items-center gap-2 bg-neutral-900/80 border border-neutral-800/80 backdrop-blur-md px-4 py-2 rounded-full text-xs font-semibold text-neutral-200">
+            <LuMousePointer class="h-4.5 w-4.5 text-amber-400 animate-pulse" />
+            <span>Arrastra para girar la cabeza 360° (Modo Sala 3D CSS)</span>
           </div>
 
-          {/* CSS 3D Perspective Container */}
-          <div class="relative w-full max-w-4xl h-[40vh] sm:h-[45vh] flex items-center justify-center mt-6" style="transform-style: preserve-3d;">
-            {obras.map((obra, idx) => {
-              const offset = idx - currentIndex.value;
-              const absOffset = Math.abs(offset);
+          {/* 3D Scene Root */}
+          <div
+            class="relative w-[1000px] h-[500px] transition-transform duration-75 ease-out"
+            style={{
+              transformStyle: "preserve-3d",
+              transform: `rotateX(${-lat.value}deg) rotateY(${lon.value}deg)`,
+            }}
+          >
+            {/* 3D Room Cube Container */}
+            <div class="absolute inset-0" style="transform-style: preserve-3d;">
+              
+              {/* FLOOR (Wood parquet floor) */}
+              <div
+                class="absolute w-[1000px] h-[1000px] border border-[#2b1d16]"
+                style={{
+                  left: "0px",
+                  top: "50%",
+                  marginTop: "-500px",
+                  transform: "translate3d(0, 250px, 0) rotateX(90deg)",
+                  background: "radial-gradient(circle, #2b1d16 0%, #170f0b 100%)",
+                  boxShadow: "inset 0 0 100px rgba(0,0,0,0.8)",
+                }}
+              />
 
-              // Render only nearby paintings to keep DOM lean
-              if (absOffset > 2) return null;
+              {/* CEILING (Dark ceiling grid) */}
+              <div
+                class="absolute w-[1000px] h-[1000px] bg-neutral-900 border border-neutral-950"
+                style={{
+                  left: "0px",
+                  top: "50%",
+                  marginTop: "-500px",
+                  transform: "translate3d(0, -250px, 0) rotateX(-90deg)",
+                  background: "radial-gradient(circle, #1a1a1a 0%, #0d0d0d 100%)",
+                  boxShadow: "inset 0 0 100px rgba(0,0,0,0.9)",
+                }}
+              />
 
-              // Calculate 3D styles
-              let transformStr = "";
-              const zIndex = 10 - absOffset;
-              let opacityStr = "1";
+              {/* NORTH WALL (Front wall, facing us, z = -500px) */}
+              <div
+                class="absolute inset-0 bg-[#eeece8] border border-stone-300/40"
+                style={{
+                  transform: "translate3d(0, 0, -500px)",
+                  boxShadow: "inset 0 0 120px rgba(0,0,0,0.18)",
+                }}
+              >
+                {/* Simulated ambient shadow vignette */}
+                <div class="absolute inset-0 bg-linear-to-b from-black/10 via-transparent to-black/15 pointer-events-none" />
+                <div class="absolute bottom-0 inset-x-0 h-4 bg-stone-900 border-t border-stone-800" /> {/* Baseboard */}
 
-              if (offset === 0) {
-                transformStr = "translate3d(0, 0, 0) rotateY(0deg) scale(1)";
-                opacityStr = "1";
-              } else if (offset === -1) {
-                transformStr = "translate3d(-200px, 0, -150px) rotateY(38deg) scale(0.85)";
-                opacityStr = "0.55";
-              } else if (offset === 1) {
-                transformStr = "translate3d(200px, 0, -150px) rotateY(-38deg) scale(0.85)";
-                opacityStr = "0.55";
-              } else if (offset === -2) {
-                transformStr = "translate3d(-360px, 0, -300px) rotateY(48deg) scale(0.72)";
-                opacityStr = "0.2";
-              } else if (offset === 2) {
-                transformStr = "translate3d(360px, 0, -300px) rotateY(-48deg) scale(0.72)";
-                opacityStr = "0.2";
-              }
+                {/* Hang North paintings */}
+                {wallGroups.value[0].map((obra, j) => {
+                  const M = wallGroups.value[0].length;
+                  const spacing = 1000 / (M + 1);
+                  const xPos = spacing * (j + 1);
+                  return (
+                    <div key={obra.id} class="absolute" style={{ left: `${xPos}px`, top: "50%", transform: "translate(-50%, -50%)", transformStyle: "preserve-3d" }}>
+                      {/* Spotlight Glow */}
+                      <div class="absolute w-56 h-56 rounded-full bg-amber-100/10 blur-xl pointer-events-none -translate-x-1/2 -translate-y-1/2" style="top: -120px; left: 0px;" />
+                      {/* Framed Artwork Mesh */}
+                      <div
+                        onClick$={() => { selectedObra.value = obra; }}
+                        class={[
+                          "relative rounded-md overflow-hidden border-[8px] border-stone-900 bg-stone-950 p-1.5 shadow-2xl transition-all duration-300 cursor-pointer select-none active:scale-98",
+                          selectedObra.value?.id === obra.id ? "border-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.3)] scale-[1.03]" : "hover:scale-[1.02] hover:border-stone-800"
+                        ]}
+                        style="box-shadow: 0 20px 45px rgba(0,0,0,0.85); transform: translate3d(0,0,10px);"
+                      >
+                        <img src={obra.image_url} alt={obra.titulo_obra || "Obra"} class="max-h-[220px] max-w-[200px] object-contain pointer-events-none select-none" />
+                        <div class="absolute inset-x-0 top-0 h-[40%] bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
-              return (
-                <div
-                  key={obra.id}
-                  onClick$={() => {
-                    selectedObra.value = obra;
-                  }}
-                  class={[
-                    "absolute w-[200px] sm:w-[280px] aspect-[3/4] sm:aspect-4/3 rounded-2xl overflow-hidden border border-stone-800 shadow-2xl transition-all duration-500 bg-stone-900 cursor-pointer select-none",
-                    offset === 0 ? "border-amber-400/50 shadow-[0_20px_50px_rgba(245,158,11,0.15)]" : "hover:opacity-90"
-                  ]}
-                  style={{
-                    transform: transformStr,
-                    zIndex: zIndex,
-                    opacity: opacityStr,
-                    transformOrigin: "center center"
-                  }}
-                >
-                  {/* Spotlight reflection */}
-                  {offset === 0 && (
-                    <div class="absolute inset-x-0 top-0 h-[60%] bg-gradient-to-b from-white/8 to-transparent pointer-events-none z-10"></div>
-                  )}
-                  <img
-                    src={obra.image_url}
-                    alt={obra.titulo_obra || "Obra"}
-                    class="w-full h-full object-cover pointer-events-none"
-                  />
-                  {/* Painting shadow frame */}
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
-                </div>
-              );
-            })}
-          </div>
+              {/* SOUTH WALL (Back wall, behind us, z = 500px, rotated 180 degrees) */}
+              <div
+                class="absolute inset-0 bg-[#eeece8] border border-stone-300/40"
+                style={{
+                  transform: "translate3d(0, 0, 500px) rotateY(180deg)",
+                  boxShadow: "inset 0 0 120px rgba(0,0,0,0.18)",
+                }}
+              >
+                <div class="absolute inset-0 bg-linear-to-b from-black/10 via-transparent to-black/15 pointer-events-none" />
+                <div class="absolute bottom-0 inset-x-0 h-4 bg-stone-900 border-t border-stone-800" />
 
-          {/* Slide Navigation Buttons */}
-          <div class="flex items-center gap-6 mt-8 sm:mt-10 z-10">
-            <button
-              onClick$={() => {
-                const prevIdx = (currentIndex.value - 1 + obras.length) % obras.length;
-                selectedObra.value = obras[prevIdx];
-              }}
-              class="p-3 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-neutral-800/80 hover:text-amber-400 hover:scale-105 active:scale-95 shadow-xl transition-all cursor-pointer"
-              title="Anterior"
-            >
-              <LuChevronLeft class="h-5 w-5" />
-            </button>
-            
-            <span class="text-neutral-400 text-xs font-semibold tracking-wider bg-neutral-900/60 px-4 py-1.5 rounded-full border border-neutral-800/40">
-              {currentIndex.value + 1} / {obras.length}
-            </span>
+                {/* Hang South paintings */}
+                {wallGroups.value[2].map((obra, j) => {
+                  const M = wallGroups.value[2].length;
+                  const spacing = 1000 / (M + 1);
+                  const xPos = spacing * (j + 1);
+                  return (
+                    <div key={obra.id} class="absolute" style={{ left: `${xPos}px`, top: "50%", transform: "translate(-50%, -50%)", transformStyle: "preserve-3d" }}>
+                      <div class="absolute w-56 h-56 rounded-full bg-amber-100/10 blur-xl pointer-events-none -translate-x-1/2 -translate-y-1/2" style="top: -120px; left: 0px;" />
+                      <div
+                        onClick$={() => { selectedObra.value = obra; }}
+                        class={[
+                          "relative rounded-md overflow-hidden border-[8px] border-stone-900 bg-stone-950 p-1.5 shadow-2xl transition-all duration-300 cursor-pointer select-none active:scale-98",
+                          selectedObra.value?.id === obra.id ? "border-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.3)] scale-[1.03]" : "hover:scale-[1.02] hover:border-stone-800"
+                        ]}
+                        style="box-shadow: 0 20px 45px rgba(0,0,0,0.85); transform: translate3d(0,0,10px);"
+                      >
+                        <img src={obra.image_url} alt={obra.titulo_obra || "Obra"} class="max-h-[220px] max-w-[200px] object-contain pointer-events-none select-none" />
+                        <div class="absolute inset-x-0 top-0 h-[40%] bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
-            <button
-              onClick$={() => {
-                const nextIdx = (currentIndex.value + 1) % obras.length;
-                selectedObra.value = obras[nextIdx];
-              }}
-              class="p-3 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-neutral-800/80 hover:text-amber-400 hover:scale-105 active:scale-95 shadow-xl transition-all cursor-pointer"
-              title="Siguiente"
-            >
-              <LuChevronRight class="h-5 w-5" />
-            </button>
+              {/* EAST WALL (Right wall, x = 500px, rotated -90 degrees) */}
+              <div
+                class="absolute inset-0 bg-[#eeece8] border border-stone-300/40"
+                style={{
+                  transform: "translate3d(500px, 0, 0) rotateY(-90deg)",
+                  boxShadow: "inset 0 0 120px rgba(0,0,0,0.18)",
+                }}
+              >
+                <div class="absolute inset-0 bg-linear-to-b from-black/10 via-transparent to-black/15 pointer-events-none" />
+                <div class="absolute bottom-0 inset-x-0 h-4 bg-stone-900 border-t border-stone-800" />
+
+                {/* Hang East paintings */}
+                {wallGroups.value[1].map((obra, j) => {
+                  const M = wallGroups.value[1].length;
+                  const spacing = 1000 / (M + 1);
+                  const xPos = spacing * (j + 1);
+                  return (
+                    <div key={obra.id} class="absolute" style={{ left: `${xPos}px`, top: "50%", transform: "translate(-50%, -50%)", transformStyle: "preserve-3d" }}>
+                      <div class="absolute w-56 h-56 rounded-full bg-amber-100/10 blur-xl pointer-events-none -translate-x-1/2 -translate-y-1/2" style="top: -120px; left: 0px;" />
+                      <div
+                        onClick$={() => { selectedObra.value = obra; }}
+                        class={[
+                          "relative rounded-md overflow-hidden border-[8px] border-stone-900 bg-stone-950 p-1.5 shadow-2xl transition-all duration-300 cursor-pointer select-none active:scale-98",
+                          selectedObra.value?.id === obra.id ? "border-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.3)] scale-[1.03]" : "hover:scale-[1.02] hover:border-stone-800"
+                        ]}
+                        style="box-shadow: 0 20px 45px rgba(0,0,0,0.85); transform: translate3d(0,0,10px);"
+                      >
+                        <img src={obra.image_url} alt={obra.titulo_obra || "Obra"} class="max-h-[220px] max-w-[200px] object-contain pointer-events-none select-none" />
+                        <div class="absolute inset-x-0 top-0 h-[40%] bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* WEST WALL (Left wall, x = -500px, rotated 90 degrees) */}
+              <div
+                class="absolute inset-0 bg-[#eeece8] border border-stone-300/40"
+                style={{
+                  transform: "translate3d(-500px, 0, 0) rotateY(90deg)",
+                  boxShadow: "inset 0 0 120px rgba(0,0,0,0.18)",
+                }}
+              >
+                <div class="absolute inset-0 bg-linear-to-b from-black/10 via-transparent to-black/15 pointer-events-none" />
+                <div class="absolute bottom-0 inset-x-0 h-4 bg-stone-900 border-t border-stone-800" />
+
+                {/* Hang West paintings */}
+                {wallGroups.value[3].map((obra, j) => {
+                  const M = wallGroups.value[3].length;
+                  const spacing = 1000 / (M + 1);
+                  const xPos = spacing * (j + 1);
+                  return (
+                    <div key={obra.id} class="absolute" style={{ left: `${xPos}px`, top: "50%", transform: "translate(-50%, -50%)", transformStyle: "preserve-3d" }}>
+                      <div class="absolute w-56 h-56 rounded-full bg-amber-100/10 blur-xl pointer-events-none -translate-x-1/2 -translate-y-1/2" style="top: -120px; left: 0px;" />
+                      <div
+                        onClick$={() => { selectedObra.value = obra; }}
+                        class={[
+                          "relative rounded-md overflow-hidden border-[8px] border-stone-900 bg-stone-950 p-1.5 shadow-2xl transition-all duration-300 cursor-pointer select-none active:scale-98",
+                          selectedObra.value?.id === obra.id ? "border-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.3)] scale-[1.03]" : "hover:scale-[1.02] hover:border-stone-800"
+                        ]}
+                        style="box-shadow: 0 20px 45px rgba(0,0,0,0.85); transform: translate3d(0,0,10px);"
+                      >
+                        <img src={obra.image_url} alt={obra.titulo_obra || "Obra"} class="max-h-[220px] max-w-[200px] object-contain pointer-events-none select-none" />
+                        <div class="absolute inset-x-0 top-0 h-[40%] bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+            </div>
           </div>
         </div>
       )}
@@ -589,7 +718,7 @@ export default component$<Sala3DProps>(({ obras, onClose$, nombreArtista }) => {
               <LuInfo class="h-3.5 w-3.5 text-amber-400/80" />
               <span>
                 {hasWebGL.value === false
-                  ? "Usa las flechas o haz clic en las miniaturas de los costados para navegar"
+                  ? "Arrastra con el mouse para girar 360° la sala y haz clic en un cuadro para ver sus detalles"
                   : "Haz clic en otra pintura en las paredes para ver sus detalles"}
               </span>
             </div>
