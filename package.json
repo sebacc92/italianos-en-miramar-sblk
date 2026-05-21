@@ -38,6 +38,7 @@
     "@tailwindcss/vite": "^4.1.4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "20.19.0",
+    "@types/three": "^0.184.1",
     "autoprefixer": "^10.4.14",
     "class-variance-authority": "0.7.1",
     "compiled-i18n": "^1.2.1",
@@ -69,6 +70,7 @@
     "bcryptjs": "^3.0.3",
     "cssnano": "^7.1.4",
     "drizzle-orm": "^0.45.2",
-    "openai": "^6.34.0"
+    "openai": "^6.34.0",
+    "three": "^0.184.0"
   }
 }
